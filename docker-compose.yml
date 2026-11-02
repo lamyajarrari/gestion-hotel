@@ -1,0 +1,117 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ----- chambres -----
+  # chambres-api:
+  #   build: ./services/chambres/backend
+  #   env_file:
+  #     - path: ./.env
+  #     - path: ./services/chambres/.env
+  #       required: false
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8001:8000"
+  #   restart: unless-stopped
+  #
+  # chambres-web:
+  #   build:
+  #     context: ./services/chambres/frontend
+  #     args:
+  #       VITE_API_URL: http://localhost:8001
+  #   ports:
+  #     - "3001:80"
+  #   depends_on:
+  #     - chambres-api
+  #   restart: unless-stopped
+
+  # ----- reservations -----
+  # reservations-api:
+  #   build: ./services/reservations/backend
+  #   env_file:
+  #     - path: ./.env
+  #     - path: ./services/reservations/.env
+  #       required: false
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8002:8000"
+  #   restart: unless-stopped
+  #
+  # reservations-web:
+  #   build:
+  #     context: ./services/reservations/frontend
+  #     args:
+  #       VITE_API_URL: http://localhost:8002
+  #   ports:
+  #     - "3002:80"
+  #   depends_on:
+  #     - reservations-api
+  #   restart: unless-stopped
+
+  # ----- housekeeping -----
+  # housekeeping-api:
+  #   build: ./services/housekeeping/backend
+  #   env_file:
+  #     - path: ./.env
+  #     - path: ./services/housekeeping/.env
+  #       required: false
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8003:8000"
+  #   restart: unless-stopped
+  #
+  # housekeeping-web:
+  #   build:
+  #     context: ./services/housekeeping/frontend
+  #     args:
+  #       VITE_API_URL: http://localhost:8003
+  #   ports:
+  #     - "3003:80"
+  #   depends_on:
+  #     - housekeeping-api
+  #   restart: unless-stopped
+
+  # ----- users -----
+  # users-api:
+  #   build: ./services/users/backend
+  #   env_file:
+  #     - path: ./.env
+  #     - path: ./services/users/.env
+  #       required: false
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   ports:
+  #     - "8004:8000"
+  #   restart: unless-stopped
+  #
+  # users-web:
+  #   build:
+  #     context: ./services/users/frontend
+  #     args:
+  #       VITE_API_URL: http://localhost:8004
+  #   ports:
+  #     - "3004:80"
+  #   depends_on:
+  #     - users-api
+  #   restart: unless-stopped
+
+volumes:
+  pgdata:
