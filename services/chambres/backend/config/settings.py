@@ -41,6 +41,10 @@ REST_FRAMEWORK = {
     "UNAUTHENTICATED_USER": None,
 }
 
+JWT_SECRET = os.environ.get("JWT_SECRET", "dev-only-jwt-secret-a-remplacer-par-32-caracteres-minimum")
+INTERNAL_API_TOKEN = os.environ.get("INTERNAL_API_TOKEN", "dev-only-internal-token")
+
+
 LANGUAGE_CODE = "fr-fr"
 TIME_ZONE = "Africa/Casablanca"
 USE_I18N = True

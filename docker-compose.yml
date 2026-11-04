@@ -15,19 +15,22 @@ services:
       retries: 10
     restart: unless-stopped
 
-  # ----- chambres -----
-  # chambres-api:
-  #   build: ./services/chambres/backend
-  #   env_file:
-  #     - path: ./.env
-  #     - path: ./services/chambres/.env
-  #       required: false
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8001:8000"
-  #   restart: unless-stopped
+  #----- chambres -----
+  chambres-api:
+    build: ./services/chambres/backend
+    env_file:
+      - path: ./.env
+      - path: ./services/chambres/.env
+        required: false
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
   #
   # chambres-web:
   #   build:
