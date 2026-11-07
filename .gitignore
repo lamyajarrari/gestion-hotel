@@ -10,3 +10,7 @@ dist/
 .DS_Store
 .idea/
 .vscode/
+
+.postman/
+.coverage
+resultats_tests_chambres.txt
