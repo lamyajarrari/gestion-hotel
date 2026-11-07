@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { urlMedia } from "../api/client.js";
-import { TYPES } from "../constantes.js";
+import { EQUIPEMENTS, TYPES } from "../constantes.js";
 
 export default function FormulaireChambre({ chambre, onEnregistrer, onAnnuler }) {
   const [forme, setForme] = useState({
@@ -8,6 +8,11 @@ export default function FormulaireChambre({ chambre, onEnregistrer, onAnnuler })
     type: chambre?.type ?? "simple",
     capacite: chambre?.capacite ?? 2,
     tarif: chambre?.tarif ?? "",
+    description: chambre?.description ?? "",
+    climatisation: chambre?.climatisation ?? false,
+    wifi: chambre?.wifi ?? true,
+    minibar: chambre?.minibar ?? false,
+    balcon: chambre?.balcon ?? false,
   });
   const [fichier, setFichier] = useState(null);
   const [erreur, setErreur] = useState("");
@@ -21,13 +26,16 @@ export default function FormulaireChambre({ chambre, onEnregistrer, onAnnuler })
   const majChamp = (cle) => (e) =>
     setForme((f) => ({ ...f, [cle]: e.target.value }));
 
+  const majCase = (cle) => (e) =>
+    setForme((f) => ({ ...f, [cle]: e.target.checked }));
+
   async function soumettre(e) {
     e.preventDefault();
     setErreur("");
     setEnCours(true);
 
     const donnees = new FormData();
-    Object.entries(forme).forEach(([cle, valeur]) => donnees.append(cle, valeur));
+    Object.entries(forme).forEach(([cle, valeur]) => donnees.append(cle, String(valeur)));
     if (fichier) donnees.append("image", fichier);
 
     try {
@@ -64,6 +72,29 @@ export default function FormulaireChambre({ chambre, onEnregistrer, onAnnuler })
       <label className="champ">
         Tarif (MAD / nuit)
         <input type="number" min={0} step="0.01" required value={forme.tarif} onChange={majChamp("tarif")} />
+      </label>
+
+      <fieldset className="champ-pleine equipements-form">
+        <legend>Équipements</legend>
+        <div className="equipements-grille">
+          {EQUIPEMENTS.map((e) => (
+            <label key={e.cle} className="case">
+              <input type="checkbox" checked={forme[e.cle]} onChange={majCase(e.cle)} />
+              <span>{e.libelle}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <label className="champ champ-pleine">
+        Description
+        <textarea
+          rows={4}
+          maxLength={1000}
+          placeholder="Vue sur le patio, lit king-size, salle de bain en zellige…"
+          value={forme.description}
+          onChange={majChamp("description")}
+        />
       </label>
 
       <div className="champ champ-pleine champ-fichier">

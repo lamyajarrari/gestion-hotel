@@ -18,8 +18,7 @@ export default function Accueil() {
 
   useEffect(() => {
     chambresPubliques()
-      .then((donnees) => setApercu(donnees.slice(0, 3)))
-      .catch(() => setApercu([]));
+      .then((donnees) => setApercu(donnees.results.slice(0, 4)))      .catch(() => setApercu([]));
   }, []);
 
   return (

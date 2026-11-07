@@ -6,7 +6,21 @@ from .models import Chambre, Indisponibilite
 class ChambreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chambre
-        fields = ["id", "numero", "type", "capacite", "tarif", "etat", "actif", "image"]
+        fields = [
+            "id",
+            "numero",
+            "type",
+            "capacite",
+            "tarif",
+            "etat",
+            "actif",
+            "image",
+            "climatisation",
+            "wifi",
+            "minibar",
+            "balcon",
+            "description",
+        ]
         read_only_fields = ["etat", "actif"]
 
 

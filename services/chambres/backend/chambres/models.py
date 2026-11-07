@@ -29,7 +29,12 @@ class Chambre(models.Model):
     actif = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    climatisation = models.BooleanField(default=False)
+    wifi = models.BooleanField(default=True)
+    minibar = models.BooleanField(default=False)
+    balcon = models.BooleanField(default=False)
+    description = models.TextField(blank=True)
+    
     class Meta:
         db_table = "chambres_chambre"
         ordering = ["numero"]

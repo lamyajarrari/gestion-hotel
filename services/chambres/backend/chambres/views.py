@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, timedelta
 
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from . import services
 from .auth import EstAdmin, EstServiceInterne, JWTAuthentication
 from .models import Chambre, Indisponibilite
+from .pagination import PaginationChambres
 from .serializers import ChambreSerializer, EtatSerializer, IndisponibiliteSerializer
 
 
@@ -18,9 +20,17 @@ class ChambreConsultationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ChambreSerializer
     authentication_classes = []
     permission_classes = [AllowAny]
+    pagination_class = PaginationChambres
 
     def get_queryset(self):
-        return Chambre.objects.filter(actif=True)
+        qs = Chambre.objects.filter(actif=True).order_by("numero")
+        type_chambre = self.request.query_params.get("type")
+        recherche = self.request.query_params.get("q")
+        if type_chambre:
+            qs = qs.filter(type=type_chambre)
+        if recherche:
+            qs = qs.filter(numero__icontains=recherche)
+        return qs
 
 
 class ChambreAdminViewSet(viewsets.ModelViewSet):
@@ -29,9 +39,10 @@ class ChambreAdminViewSet(viewsets.ModelViewSet):
     serializer_class = ChambreSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [EstAdmin]
+    pagination_class = PaginationChambres
 
     def get_queryset(self):
-        qs = Chambre.objects.all()
+        qs = Chambre.objects.all().order_by("numero")
         etat = self.request.query_params.get("etat")
         if etat:
             qs = qs.filter(etat=etat)
@@ -69,6 +80,54 @@ class ChambreAdminViewSet(viewsets.ModelViewSet):
             return Response({"detail": str(erreur)}, status=status.HTTP_409_CONFLICT)
         chambre.refresh_from_db()
         return Response(self.get_serializer(chambre).data)
+
+    @action(detail=False, methods=["get"])
+    def statistiques(self, request):
+        chambres = Chambre.objects.all()
+        actives = chambres.filter(actif=True)
+
+        try:
+            debut = date.fromisoformat(
+                request.query_params.get("debut", (date.today() - timedelta(days=30)).isoformat())
+            )
+            fin = date.fromisoformat(
+                request.query_params.get("fin", date.today().isoformat())
+            )
+        except ValueError:
+            return Response(
+                {"detail": "Dates invalides (AAAA-MM-JJ)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if fin <= debut:
+            return Response(
+                {"detail": "La date de fin doit être après la date de début."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        nuits_periode = (fin - debut).days
+        indisponibilites = Indisponibilite.objects.filter(
+            chambre__actif=True,
+            date_debut__lt=fin,
+            date_fin__gt=debut,
+        )
+        nuits_bloquees = 0
+        for indispo in indisponibilites:
+            debut_effectif = max(indispo.date_debut, debut)
+            fin_effective = min(indispo.date_fin, fin)
+            nuits_bloquees += (fin_effective - debut_effectif).days
+
+        capacite = actives.count() * nuits_periode
+        taux = round(100 * nuits_bloquees / capacite, 1) if capacite else 0
+
+        return Response({
+            "periode": {"debut": debut.isoformat(), "fin": fin.isoformat()},
+            "total": chambres.count(),
+            "actives": actives.count(),
+            "par_etat": list(actives.values("etat").annotate(total=Count("id")).order_by("etat")),
+            "par_type": list(actives.values("type").annotate(total=Count("id")).order_by("type")),
+            "nuits_bloquees": nuits_bloquees,
+            "taux_indisponibilite": taux,
+        })
 
 
 class IndisponibiliteAdminViewSet(viewsets.ModelViewSet):

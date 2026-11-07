@@ -10,3 +10,10 @@ export const TYPES = {
   double: "Double",
   suite: "Suite",
 };
+
+export const EQUIPEMENTS = [
+  { cle: "climatisation", libelle: "Climatisation", icone: "clim" },
+  { cle: "wifi", libelle: "Wi-Fi", icone: "wifi" },
+  { cle: "minibar", libelle: "Minibar", icone: "minibar" },
+  { cle: "balcon", libelle: "Balcon", icone: "balcon" },
+];

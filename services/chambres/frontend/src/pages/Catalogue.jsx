@@ -1,27 +1,32 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { chambresPubliques } from "../api/chambres.js";
 import ChambreCard from "../components/ChambreCard.jsx";
+import Pagination from "../components/Pagination.jsx";
 import { TYPES } from "../constantes.js";
 
 export default function Catalogue() {
-  const [chambres, setChambres] = useState(null);
+  const [donnees, setDonnees] = useState(null);
   const [erreur, setErreur] = useState("");
   const [type, setType] = useState("");
   const [recherche, setRecherche] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    chambresPubliques()
-      .then(setChambres)
+    setErreur("");
+    chambresPubliques({ page, type, q: recherche.trim() })
+      .then(setDonnees)
       .catch((e) => setErreur(e.message));
-  }, []);
+  }, [page, type, recherche]);
 
-  const filtrees = useMemo(() => {
-    if (!chambres) return [];
-    const terme = recherche.trim().toLowerCase();
-    return chambres.filter(
-      (c) => (!type || c.type === type) && c.numero.toLowerCase().includes(terme)
-    );
-  }, [chambres, type, recherche]);
+  function changerType(valeur) {
+    setType(valeur);
+    setPage(1);
+  }
+
+  function changerRecherche(valeur) {
+    setRecherche(valeur);
+    setPage(1);
+  }
 
   return (
     <section className="section">
@@ -38,12 +43,12 @@ export default function Catalogue() {
               type="search"
               placeholder="Numéro de chambre"
               value={recherche}
-              onChange={(e) => setRecherche(e.target.value)}
+              onChange={(e) => changerRecherche(e.target.value)}
             />
           </label>
           <label className="champ">
             Type
-            <select value={type} onChange={(e) => setType(e.target.value)}>
+            <select value={type} onChange={(e) => changerType(e.target.value)}>
               <option value="">Tous les types</option>
               {Object.entries(TYPES).map(([valeur, libelle]) => (
                 <option key={valeur} value={valeur}>{libelle}</option>
@@ -53,16 +58,27 @@ export default function Catalogue() {
         </div>
 
         {erreur && <p className="alerte">{erreur}</p>}
-        {chambres === null && !erreur && <p className="vide">Chargement…</p>}
-        {chambres && filtrees.length === 0 && (
+        {donnees === null && !erreur && <p className="vide">Chargement…</p>}
+
+        {donnees && donnees.results.length === 0 && (
           <p className="vide">Aucune chambre ne correspond à votre recherche.</p>
         )}
 
-        <div className="grille-chambres">
-          {filtrees.map((c) => (
-            <ChambreCard key={c.id} chambre={c} />
-          ))}
-        </div>
+        {donnees && donnees.results.length > 0 && (
+          <>
+            <div className="grille-chambres">
+              {donnees.results.map((c) => (
+                <ChambreCard key={c.id} chambre={c} />
+              ))}
+            </div>
+            <Pagination
+              page={page}
+              hasPrev={Boolean(donnees.previous)}
+              hasNext={Boolean(donnees.next)}
+              onChange={setPage}
+            />
+          </>
+        )}
       </div>
     </section>
   );

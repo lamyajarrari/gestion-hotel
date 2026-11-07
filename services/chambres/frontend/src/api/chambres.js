@@ -1,9 +1,17 @@
 import { api } from "./client.js";
 
-export const chambresPubliques = () => api("/api/chambres/");
+export const chambresPubliques = ({ page = 1, type = "", q = "" } = {}) => {
+  const params = new URLSearchParams({ page });
+  if (type) params.set("type", type);
+  if (q) params.set("q", q);
+  return api(`/api/chambres/?${params}`);
+};
 
-export const chambresAdmin = (token, etat = "") =>
-  api(`/api/admin/chambres/${etat ? `?etat=${encodeURIComponent(etat)}` : ""}`, { token });
+export const chambresAdmin = (token, { etat = "", page = 1 } = {}) => {
+  const params = new URLSearchParams({ page });
+  if (etat) params.set("etat", etat);
+  return api(`/api/admin/chambres/?${params}`, { token });
+};
 
 export const creerChambre = (token, donnees) =>
   api("/api/admin/chambres/", { methode: "POST", corps: donnees, token });
@@ -19,6 +27,9 @@ export const activer = (token, id) =>
 
 export const desactiver = (token, id) =>
   api(`/api/admin/chambres/${id}/desactiver/`, { methode: "POST", token });
+
+export const statistiquesChambres = (token, debut, fin) =>
+  api(`/api/admin/chambres/statistiques/?debut=${debut}&fin=${fin}`, { token });
 
 export const indisponibilitesChambre = (token, chambreId) =>
   api(`/api/admin/indisponibilites/?chambre=${chambreId}`, { token });

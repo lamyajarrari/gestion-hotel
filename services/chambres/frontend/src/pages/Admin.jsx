@@ -13,23 +13,26 @@ import { lireToken } from "../auth/session.js";
 import FormulaireChambre from "../components/FormulaireChambre.jsx";
 import Icone from "../components/Icone.jsx";
 import Modal from "../components/Modal.jsx";
+import Pagination from "../components/Pagination.jsx";
 import PanneauIndisponibilites from "../components/PanneauIndisponibilites.jsx";
+import Statistiques from "../components/Statistiques.jsx";
 import { ETATS, TYPES } from "../constantes.js";
 
 export default function Admin() {
   const token = lireToken();
-  const [chambres, setChambres] = useState([]);
+  const [donnees, setDonnees] = useState(null);
   const [filtreEtat, setFiltreEtat] = useState("");
+  const [page, setPage] = useState(1);
   const [erreur, setErreur] = useState("");
   // null | { mode: "creer" } | { mode: "editer", chambre } | { mode: "indispo", chambre }
   const [modale, setModale] = useState(null);
 
   const charger = useCallback(() => {
     if (!token) return;
-    chambresAdmin(token, filtreEtat)
-      .then(setChambres)
+    chambresAdmin(token, { etat: filtreEtat, page })
+      .then(setDonnees)
       .catch((e) => setErreur(e.message));
-  }, [token, filtreEtat]);
+  }, [token, filtreEtat, page]);
 
   useEffect(() => {
     charger();
@@ -47,17 +50,24 @@ export default function Admin() {
     }
   }
 
-  async function enregistrer(donnees) {
+  async function enregistrer(valeurs) {
     if (modale.mode === "creer") {
-      await creerChambre(token, donnees);
+      await creerChambre(token, valeurs);
     } else {
-      await modifierChambre(token, modale.chambre.id, donnees);
+      await modifierChambre(token, modale.chambre.id, valeurs);
     }
     setModale(null);
     charger();
   }
 
   const fermer = () => setModale(null);
+
+  function changerFiltre(valeur) {
+    setFiltreEtat(valeur);
+    setPage(1);
+  }
+
+  const chambres = donnees?.results ?? [];
 
   const titreModale =
     modale?.mode === "creer"
@@ -70,27 +80,30 @@ export default function Admin() {
 
   return (
     <section className="section">
-      <div className="conteneur">
+      <div className="conteneur conteneur-large">
         <div className="entete-admin">
           <div>
             <p className="etiquette">Administration</p>
             <h2>Gestion des chambres</h2>
           </div>
-          <button className="btn btn-primaire" onClick={() => setModale({ mode: "creer" })}>
-            + Nouvelle chambre
-          </button>
         </div>
 
-        <div className="filtres">
+        <Statistiques token={token} />
+
+        <div className="barre-admin">
           <label className="champ">
             État
-            <select value={filtreEtat} onChange={(e) => setFiltreEtat(e.target.value)}>
+            <select value={filtreEtat} onChange={(e) => changerFiltre(e.target.value)}>
               <option value="">Tous les états</option>
               {Object.entries(ETATS).map(([valeur, libelle]) => (
                 <option key={valeur} value={valeur}>{libelle}</option>
               ))}
             </select>
           </label>
+
+          <button className="btn btn-primaire" onClick={() => setModale({ mode: "creer" })}>
+            + Nouvelle chambre
+          </button>
         </div>
 
         {erreur && <p className="alerte">{erreur}</p>}
@@ -180,6 +193,15 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
+
+        {donnees && (
+          <Pagination
+            page={page}
+            hasPrev={Boolean(donnees.previous)}
+            hasNext={Boolean(donnees.next)}
+            onChange={setPage}
+          />
+        )}
       </div>
 
       {modale && (
