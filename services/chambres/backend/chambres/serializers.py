@@ -6,11 +6,13 @@ from .models import Chambre, Indisponibilite
 class ChambreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chambre
-        fields = ["id", "numero", "type", "capacite", "tarif", "etat", "actif"]
+        fields = ["id", "numero", "type", "capacite", "tarif", "etat", "actif", "image"]
         read_only_fields = ["etat", "actif"]
+
 
 class EtatSerializer(serializers.Serializer):
     etat = serializers.ChoiceField(choices=Chambre.Etat.choices)
+
 
 class IndisponibiliteSerializer(serializers.ModelSerializer):
     class Meta:

@@ -16,6 +16,7 @@ class Chambre(models.Model):
         A_NETTOYER = "a_nettoyer", "À nettoyer"
         MAINTENANCE = "maintenance", "En maintenance"
 
+    image = models.ImageField(upload_to="chambres/", blank=True, null=True)
     numero = models.CharField(max_length=10, unique=True)
     type = models.CharField(max_length=20, choices=Type.choices)
     capacite = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])

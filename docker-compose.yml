@@ -30,6 +30,8 @@ services:
         condition: service_healthy
     ports:
       - "8001:8000"
+    volumes:
+      - chambres_media:/app/media
     restart: unless-stopped
   #
   # chambres-web:
@@ -120,3 +122,4 @@ services:
 
 volumes:
   pgdata:
+  chambres_media:
