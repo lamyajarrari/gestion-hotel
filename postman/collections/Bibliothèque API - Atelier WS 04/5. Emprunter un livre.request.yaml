@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/livres/1/emprunter"
+method: PUT
+order: 5000

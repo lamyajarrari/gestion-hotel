@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/livres/1/retourner"
+method: PUT
+order: 6000

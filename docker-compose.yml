@@ -34,16 +34,16 @@ services:
       - chambres_media:/app/media
     restart: unless-stopped
   #
-  # chambres-web:
-  #   build:
-  #     context: ./services/chambres/frontend
-  #     args:
-  #       VITE_API_URL: http://localhost:8001
-  #   ports:
-  #     - "3001:80"
-  #   depends_on:
-  #     - chambres-api
-  #   restart: unless-stopped
+  chambres-web:
+    build:
+      context: ./services/chambres/frontend
+      args:
+        VITE_API_URL: http://localhost:8001
+    ports:
+      - "3001:80"
+    depends_on:
+      - chambres-api
+    restart: unless-stopped
 
   # ----- reservations -----
   # reservations-api:
