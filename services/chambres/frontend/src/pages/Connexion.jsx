@@ -1,38 +1,23 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { enregistrerToken } from "../auth/session.js";
 
+const USERS_WEB = import.meta.env.VITE_USERS_WEB_URL || "http://localhost:3004";
+
 export default function Connexion() {
   const navigate = useNavigate();
-  const [jeton, setJeton] = useState("");
 
-  function soumettre(e) {
-    e.preventDefault();
-    if (!jeton.trim()) return;
-    enregistrerToken(jeton.trim());
-    navigate("/admin");
-  }
+  useEffect(() => {
+    const jeton = new URLSearchParams(window.location.hash.slice(1)).get("jeton");
+    if (jeton) {
+      enregistrerToken(jeton);
+      window.history.replaceState(null, "", window.location.pathname);
+      navigate("/admin", { replace: true });
+    } else {
+      const retour = `${window.location.origin}/connexion`;
+      window.location.href = `${USERS_WEB}/connexion?retour=${encodeURIComponent(retour)}`;
+    }
+  }, [navigate]);
 
-  return (
-    <section className="carte-connexion">
-      <p className="etiquette">Espace administration</p>
-      <h1>Connexion</h1>
-      <p className="texte-doux">
-        Collez le jeton d'accès administrateur. Il sera remplacé par une connexion
-        complète dès que le service utilisateurs sera en place.
-      </p>
-      <form onSubmit={soumettre}>
-        <label className="champ">
-          Jeton d'accès
-          <textarea
-            rows={4}
-            placeholder="eyJhbGciOi…"
-            value={jeton}
-            onChange={(e) => setJeton(e.target.value)}
-          />
-        </label>
-        <button type="submit" className="btn btn-primaire">Se connecter</button>
-      </form>
-    </section>
-  );
+  return <p>Redirection vers la connexion...</p>;
 }
