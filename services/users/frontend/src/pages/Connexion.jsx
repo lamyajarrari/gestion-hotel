@@ -22,45 +22,56 @@ export default function Connexion() {
   const [connecte, setConnecte] = useState(false);
   const [chargement, setChargement] = useState(false);
 
-async function soumettre(evenement) {
-  evenement.preventDefault();
-  setErreur("");
-  setChargement(true);
-  try {
-    const { jeton, role } = await connecter(email, motDePasse);
-    if (retour && retourAutorise(retour)) {
-      const fragment = `jeton=${encodeURIComponent(jeton)}&role=${encodeURIComponent(role)}`;
-      window.location.href = `${retour}#${fragment}`;
-    } else {
-      setConnecte(true);
+  async function soumettre(evenement) {
+    evenement.preventDefault();
+    setErreur("");
+    setChargement(true);
+    try {
+      const { jeton, role } = await connecter(email, motDePasse);
+      if (retour && retourAutorise(retour)) {
+        const fragment = `jeton=${encodeURIComponent(jeton)}&role=${encodeURIComponent(role)}`;
+        window.location.href = `${retour}#${fragment}`;
+      } else {
+        setConnecte(true);
+      }
+    } catch (e) {
+      setErreur(
+        e.message === "Failed to fetch"
+          ? "Le service de comptes est injoignable."
+          : e.message
+      );
+    } finally {
+      setChargement(false);
     }
-  } catch (e) {
-    setErreur(
-      e.message === "Failed to fetch"
-        ? "Le service de comptes est injoignable."
-        : e.message
-    );
-  } finally {
-    setChargement(false);
   }
-}
-    <main>
+
+  if (connecte) {
+    return (
+      <main className="carte-connexion">
+        <p>Connexion réussie.</p>
+      </main>
+    );
+  }
+
+  return (
+    <main className="carte-connexion">
+      <p className="etiquette">Riad Souss</p>
       <h1>Connexion</h1>
       <form onSubmit={soumettre}>
-        <label>
+        <label className="champ">
           E-mail
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </label>
-        <label>
+        <label className="champ">
           Mot de passe
           <input type="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required />
         </label>
-        {erreur && <p role="alert">{erreur}</p>}
-        <button type="submit" disabled={chargement}>
+        {erreur && <p className="alerte" role="alert">{erreur}</p>}
+        <button type="submit" className="btn btn-primaire" disabled={chargement}>
           {chargement ? "Connexion..." : "Se connecter"}
         </button>
       </form>
-      <p>
+      <p className="texte-doux">
         Pas encore de compte ? <Link to="/inscription">Créer un compte</Link>
       </p>
     </main>
