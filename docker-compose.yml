@@ -42,14 +42,6 @@ services:
       - chambres_media:/app/media
     restart: unless-stopped
 
-  # chambres-web:
-  #   build: ./services/chambres/frontend
-  #   ports:
-  #     - "3001:80"
-  #   depends_on:
-  #     - chambres-api
-  #   restart: unless-stopped
-
   # ==========================================
   # MICROSERVICE RESERVATIONS
   # ==========================================
