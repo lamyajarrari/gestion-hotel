@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseUrl}}/api/livres/1"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: '{"titre": "Le Petit Prince (édition révisée)", "auteur": "Antoine de Saint-Exupéry", "anneePublication": 1943, "isbn": "978-2-07-040525-0", "disponible": true}'
+order: 8000
