@@ -24,6 +24,26 @@ class ReservationCreate(BaseModel):
         return self
 
 
+# Schéma utilisé pour modifier une réservation
+class ReservationUpdate(BaseModel):
+    dateDebut: date | None = None
+    dateFin: date | None = None
+    nombrePersonnes: int | None = Field(default=None, gt=0)
+    chambre_id: int | None = None
+
+    @model_validator(mode="after")
+    def verifier_dates(self):
+        if (
+            self.dateDebut is not None
+            and self.dateFin is not None
+            and self.dateFin <= self.dateDebut
+        ):
+            raise ValueError(
+                "La date de départ doit être après la date d'arrivée."
+            )
+        return self
+
+
 # Schéma utilisé pour retourner une réservation
 class ReservationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

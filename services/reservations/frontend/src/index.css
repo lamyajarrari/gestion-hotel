@@ -1,0 +1,767 @@
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+/* =========================================
+   1. VARIABLES DU DESIGN
+========================================= */
+
+:root {
+  --couleur-bleu: #1f3a5f;
+  --couleur-terracotta: #c2653c;
+  --couleur-olive: #5b7344;
+  --couleur-fond: #faf6ef;
+  --couleur-surface: #ffffff;
+  --couleur-texte: #263445;
+  --couleur-texte-doux: #78818d;
+  --couleur-bordure: #e8dfd3;
+
+  --police-titre: 'Playfair Display', serif;
+  --police-texte: 'DM Sans', sans-serif;
+
+  --rayon: 14px;
+  --ombre: 0 5px 18px rgba(29, 43, 58, 0.06);
+}
+
+/* =========================================
+   2. RESET GÉNÉRAL
+========================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--police-texte);
+  background: var(--couleur-fond);
+  color: var(--couleur-texte);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--police-texte);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* =========================================
+   3. STRUCTURE PRINCIPALE
+========================================= */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 30px;
+  background: var(--couleur-fond);
+}
+
+/* =========================================
+   4. MENU LATÉRAL
+========================================= */
+
+.sidebar {
+  width: 250px;
+  min-width: 250px;
+  min-height: 100vh;
+  padding: 24px 18px;
+  background: var(--couleur-bleu);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.brand {
+  font-family: var(--police-titre);
+  font-size: 30px;
+  font-weight: 700;
+  color: #e9c3a8;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.sidebar h2 {
+  font-family: var(--police-titre);
+  font-size: 22px;
+  color: #e9c3a8;
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 46px;
+  padding: 10px 13px;
+  color: #f1f3f6;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.25s ease;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+.nav-link.active {
+  background: var(--couleur-terracotta);
+  color: white;
+}
+
+/* Icônes du menu */
+
+.sidebar .nav-link svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+
+.sidebar > svg {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 14px;
+  color: #e9c3a8;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 25px;
+  color: #f1f3f6;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   5. BARRE SUPÉRIEURE
+========================================= */
+
+.navbar {
+  min-height: 72px;
+  padding: 14px 20px;
+  margin-bottom: 28px;
+  background: white;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.navbar h3 {
+  font-family: var(--police-titre);
+  font-size: 20px;
+  color: var(--couleur-bleu);
+}
+
+.navbar p {
+  color: var(--couleur-texte-doux);
+  font-size: 13px;
+}
+
+.navbar svg {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+}
+
+/* =========================================
+   6. TITRES DES PAGES
+========================================= */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.page-header h1 {
+  font-family: var(--police-titre);
+  font-size: 28px;
+  color: var(--couleur-bleu);
+  margin-bottom: 6px;
+}
+
+.page-header p {
+  color: var(--couleur-texte-doux);
+  font-size: 13px;
+}
+
+/* =========================================
+   7. BOUTONS
+========================================= */
+
+.primary-btn {
+  background: var(--couleur-terracotta);
+  color: white;
+  padding: 11px 19px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+.primary-btn:hover {
+  background: #ad5630;
+  transform: translateY(-2px);
+}
+
+.secondary-btn {
+  background: white;
+  color: var(--couleur-bleu);
+  padding: 10px 17px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.secondary-btn:hover {
+  background: #f2ece3;
+}
+
+.danger-btn {
+  background: #f9e8e4;
+  color: #a33e30;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.primary-btn svg,
+.secondary-btn svg,
+.danger-btn svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+/* =========================================
+   8. CARTES STATISTIQUES
+========================================= */
+
+.stats-grid,
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  position: relative;
+  min-height: 135px;
+  padding: 20px 22px;
+  background: white;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  transition: 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+}
+
+.stat-card h4 {
+  color: var(--couleur-texte-doux);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.stat-card strong {
+  display: block;
+  font-family: var(--police-titre);
+  font-size: 27px;
+  color: var(--couleur-bleu);
+  padding-right: 38px;
+}
+
+.stat-card p {
+  color: var(--couleur-texte-doux);
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+/* Icônes des statistiques */
+
+.stat-card svg {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 25px;
+  height: 25px;
+  color: #d9ad62;
+  stroke-width: 1.9;
+}
+
+/* =========================================
+   9. CARTES DE CONTENU
+========================================= */
+
+.content-card {
+  background: white;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon);
+  padding: 24px;
+  margin-bottom: 22px;
+  box-shadow: var(--ombre);
+}
+
+.content-card h3 {
+  font-family: var(--police-titre);
+  font-size: 22px;
+  color: var(--couleur-bleu);
+  margin-bottom: 15px;
+}
+
+.content-card p {
+  color: var(--couleur-texte-doux);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* =========================================
+   10. RECHERCHE ET FILTRES
+========================================= */
+
+.search-box {
+  width: 100%;
+  max-width: 320px;
+  padding: 11px 16px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 999px;
+  outline: none;
+  background: white;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.search-box:focus {
+  border-color: var(--couleur-terracotta);
+  box-shadow: 0 0 0 3px rgba(194, 101, 60, 0.12);
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.filters select {
+  padding: 10px 13px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 9px;
+  background: white;
+  color: var(--couleur-texte);
+  outline: none;
+  font-size: 13px;
+}
+
+/* =========================================
+   11. TABLEAU DES RÉSERVATIONS
+========================================= */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.reservation-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.reservation-table th {
+  background: #fbf8f2;
+  color: var(--couleur-texte-doux);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  padding: 13px;
+}
+
+.reservation-table td {
+  padding: 14px 13px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.reservation-table tbody tr:hover {
+  background: #fdfbf8;
+}
+
+.reservation-table tr:last-child td {
+  border-bottom: none;
+}
+
+.reservation-table svg {
+  width: 17px;
+  height: 17px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* =========================================
+   12. BADGES DE STATUT
+========================================= */
+
+.status,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-confirmed {
+  background: #e6eedb;
+  color: var(--couleur-olive);
+}
+
+.status-pending {
+  background: #f6e1d6;
+  color: #9a4a25;
+}
+
+.status-cancelled {
+  background: #eceef2;
+  color: #4b5563;
+}
+
+.status-completed {
+  background: #e1eaf3;
+  color: var(--couleur-bleu);
+}
+
+/* =========================================
+   13. FORMULAIRES
+========================================= */
+
+.form-container {
+  max-width: 800px;
+  background: white;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon);
+  padding: 25px;
+  box-shadow: var(--ombre);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  color: var(--couleur-bleu);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 9px;
+  background: white;
+  color: var(--couleur-texte);
+  outline: none;
+  font-size: 13px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--couleur-terracotta);
+  box-shadow: 0 0 0 3px rgba(194, 101, 60, 0.10);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* =========================================
+   14. PAGE SÉJOURS
+========================================= */
+
+.sejours-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.sejour-card {
+  background: white;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon);
+  padding: 20px;
+  box-shadow: var(--ombre);
+}
+
+.sejour-card h3 {
+  font-family: var(--police-titre);
+  color: var(--couleur-bleu);
+  font-size: 19px;
+  margin-bottom: 12px;
+}
+
+.sejour-card p {
+  color: var(--couleur-texte-doux);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+/* =========================================
+   15. MESSAGES
+========================================= */
+
+.empty-state {
+  text-align: center;
+  padding: 35px 18px;
+  color: var(--couleur-texte-doux);
+}
+
+.error-message {
+  background: #fbe9e6;
+  color: #a33e30;
+  padding: 11px 14px;
+  border-radius: 9px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+.success-message {
+  background: #e6eedb;
+  color: var(--couleur-olive);
+  padding: 11px 14px;
+  border-radius: 9px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+/* =========================================
+   16. ORGANISATION DES ICÔNES
+========================================= */
+
+svg.lucide {
+  display: inline-block;
+  flex-shrink: 0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-link,
+.primary-btn,
+.secondary-btn,
+.danger-btn {
+  align-items: center;
+}
+
+.nav-link svg,
+.primary-btn svg,
+.secondary-btn svg,
+.danger-btn svg {
+  flex-shrink: 0;
+}
+
+/* =========================================
+   17. RESPONSIVE TABLETTE
+========================================= */
+
+@media (max-width: 1100px) {
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+
+  .stats-grid,
+  .stats-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sejours-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================
+   18. RESPONSIVE MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    min-height: auto;
+    padding: 18px;
+  }
+
+  .brand {
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+
+  .sidebar h2 {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+
+  .sidebar nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-link {
+    gap: 7px;
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .sidebar .nav-link svg {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+  }
+
+  .main-content {
+    padding: 18px 14px;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .stats-grid,
+  .stats-container,
+  .sejours-grid,
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .navbar {
+    min-height: auto;
+    padding: 14px;
+    margin-bottom: 22px;
+  }
+
+  .navbar h3 {
+    font-size: 18px;
+  }
+
+  .content-card,
+  .form-container {
+    padding: 18px;
+  }
+
+  .stat-card {
+    min-height: 125px;
+  }
+
+  .stat-card svg {
+    width: 23px;
+    height: 23px;
+    right: 17px;
+  }
+}
+
+/* =========================================
+   19. PETITS ÉCRANS
+========================================= */
+
+@media (max-width: 450px) {
+  .stat-card {
+    min-height: 115px;
+    padding: 18px;
+  }
+
+  .stat-card strong {
+    font-size: 24px;
+  }
+
+  .primary-btn {
+    width: 100%;
+  }
+
+  .navbar {
+    flex-wrap: wrap;
+  }
+}
