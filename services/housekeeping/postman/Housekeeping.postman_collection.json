@@ -1,0 +1,757 @@
+{
+  "info": {
+    "name": "Housekeeping · Riad Souss",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Variables : base_url (http://localhost:8003), token (python manage.py make_token --role GESTIONNAIRE), token_client (python manage.py make_token --role CLIENT --user-id 9), chambre_id, agent_id. Lancer dans l'ordre."
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8003"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "chambre_id",
+      "value": "2"
+    },
+    {
+      "key": "agent_id",
+      "value": "7"
+    },
+    {
+      "key": "service_id",
+      "value": ""
+    },
+    {
+      "key": "token_client",
+      "value": ""
+    },
+    {
+      "key": "demande_id",
+      "value": ""
+    },
+    {
+      "key": "service_a_supprimer",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Santé (public)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/health/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "health"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "description": "",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Chambres à nettoyer",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/chambres-a-nettoyer/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services",
+            "chambres-a-nettoyer"
+          ]
+        }
+      },
+      "description": "Lit la liste dans le service chambres (route admin, avec votre JWT).",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Assigner un ménage de départ",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"chambre_id\": \"{{chambre_id}}\",\n  \"agent_id\": \"{{agent_id}}\",\n  \"type\": \"DEPART\",\n  \"date_prevue\": \"2026-11-20\",\n  \"description\": \"Draps à changer\",\n  \"priorite\": \"HAUTE\"\n}"
+        }
+      },
+      "description": "201 si la chambre est « à nettoyer », l'agent actif et aucun service non terminé sur la chambre. Sinon 409/400.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.collectionVariables.set('service_id', j.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Lister les services (filtres)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/?statut=ASSIGNE&priorite=HAUTE",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services"
+          ],
+          "query": [
+            {
+              "key": "statut",
+              "value": "ASSIGNE"
+            },
+            {
+              "key": "priorite",
+              "value": "HAUTE"
+            }
+          ]
+        }
+      },
+      "description": "",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Modifier priorité / description",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/{{service_id}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services",
+            "{{service_id}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"priorite\": \"BASSE\",\n  \"description\": \"Draps et serviettes\"\n}"
+        }
+      },
+      "description": "Refusé (409) si le service est terminé.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Démarrer",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/{{service_id}}/demarrer/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services",
+            "{{service_id}}",
+            "demarrer"
+          ]
+        }
+      },
+      "description": "",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('EN_COURS', () => pm.expect(pm.response.json().statut).to.eql('EN_COURS'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Terminer",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/{{service_id}}/terminer/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services",
+            "{{service_id}}",
+            "terminer"
+          ]
+        }
+      },
+      "description": "Pour un ménage de départ, la chambre repasse à « disponible » dans le service chambres.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('TERMINE', () => pm.expect(pm.response.json().statut).to.eql('TERMINE'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Détail d'un service",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/{{service_id}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services",
+            "{{service_id}}"
+          ]
+        }
+      },
+      "description": "",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Erreur 409 : terminer deux fois",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/{{service_id}}/terminer/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services",
+            "{{service_id}}",
+            "terminer"
+          ]
+        }
+      },
+      "description": "",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Erreur 401 : sans jeton",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/housekeeping/services/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "housekeeping",
+            "services"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "description": "",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "— Suppression, recherche —",
+      "item": [
+        {
+          "name": "10. Créer puis SUPPRIMER un service assigné",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/services/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "services"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chambre_id\": \"4\",\n  \"agent_id\": \"7\",\n  \"type\": \"DEPART\",\n  \"date_prevue\": \"2026-11-20\",\n  \"description\": \"À supprimer\",\n  \"priorite\": \"BASSE\"\n}"
+            }
+          },
+          "description": "",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('service_a_supprimer', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11. Supprimer le service (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/services/{{service_a_supprimer}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "services",
+                "{{service_a_supprimer}}"
+              ]
+            }
+          },
+          "description": "Autorisé seulement si le service est « assigné » ; sinon 409.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12. Recherche libre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/services/?q=Draps",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "services",
+                "?q=Draps"
+              ]
+            }
+          },
+          "description": "",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "— Demandes de nettoyage (client) —",
+      "item": [
+        {
+          "name": "13. Client : demander un nettoyage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/demandes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "demandes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_client}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chambre_id\": \"1\",\n  \"description\": \"Serviettes propres\",\n  \"priorite\": \"NORMALE\"\n}"
+            }
+          },
+          "description": "Jeton CLIENT (variable token_client). 201 si la chambre est occupée ; 409 sinon.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('demande_id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14. Client : suivre ses demandes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/demandes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "demandes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_client}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "description": "",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15. Gestionnaire : toutes les demandes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/demandes/?statut=DEMANDE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "demandes",
+                "?statut=DEMANDE"
+              ]
+            }
+          },
+          "description": "",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16. Gestionnaire : traiter la demande",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/demandes/{{demande_id}}/traiter/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "demandes",
+                "{{demande_id}}",
+                "traiter"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agent_id\": \"7\",\n  \"date_prevue\": \"2026-11-20\"\n}"
+            }
+          },
+          "description": "",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('EN_COURS', () => pm.expect(pm.response.json().statut).to.eql('EN_COURS'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17. Client : annuler (409 car déjà traitée)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/demandes/{{demande_id}}/annuler/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "demandes",
+                "{{demande_id}}",
+                "annuler"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_client}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "description": "",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18. Erreur 403 : le client ne peut pas lister les services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/housekeeping/services/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "housekeeping",
+                "services"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_client}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "description": "",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
