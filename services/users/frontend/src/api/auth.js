@@ -17,3 +17,9 @@ export const connecter = (email, mot_de_passe) =>
   appeler("connexion", { email, mot_de_passe });
 
 export const inscrire = (donnees) => appeler("inscription", donnees);
+
+export const demanderReinitialisation = (email) =>
+  appeler("mot-de-passe-oublie", { email });
+
+export const reinitialiser = (uid, jeton, mot_de_passe) =>
+  appeler("reinitialiser", { uid, jeton, mot_de_passe });

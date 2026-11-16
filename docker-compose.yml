@@ -1,5 +1,5 @@
 services:
-   db:
+  db:
     image: postgres:16
     ports:
       - "5433:5432"
@@ -15,7 +15,7 @@ services:
       retries: 10
     restart: unless-stopped
 
-  #----- chambres -----
+  # ----- chambres -----
   chambres-api:
     build: ./services/chambres/backend
     env_file:
@@ -33,7 +33,7 @@ services:
     volumes:
       - chambres_media:/app/media
     restart: unless-stopped
-  #
+
   chambres-web:
     build:
       context: ./services/chambres/frontend
@@ -96,29 +96,41 @@ services:
   #   restart: unless-stopped
 
   # ----- users -----
-  # users-api:
-  #   build: ./services/users/backend
-  #   env_file:
-  #     - path: ./.env
-  #     - path: ./services/users/.env
-  #       required: false
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8004:8000"
-  #   restart: unless-stopped
-  #
-  # users-web:
-  #   build:
-  #     context: ./services/users/frontend
-  #     args:
-  #       VITE_API_URL: http://localhost:8004
-  #   ports:
-  #     - "3004:80"
-  #   depends_on:
-  #     - users-api
-  #   restart: unless-stopped
+  users-api:
+    build: ./services/users/backend
+    env_file:
+      - path: ./.env
+      - path: ./services/users/.env
+        required: false
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8004:8000"
+    restart: unless-stopped
+
+  users-web:
+    build:
+      context: ./services/users/frontend
+      args:
+        VITE_API_URL: http://localhost:8004
+    ports:
+      - "3004:80"
+    depends_on:
+      - users-api
+    restart: unless-stopped
+
+
+    # ----- boîte mail de test -----
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+    restart: unless-stopped
+
 
 volumes:
   pgdata:

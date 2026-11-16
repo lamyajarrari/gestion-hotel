@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { inscrire } from "../api/auth.js";
 
 export default function Inscription() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [champs, setChamps] = useState({ prenom: "", nom: "", email: "", mot_de_passe: "" });
   const [erreur, setErreur] = useState("");
-  const [fait, setFait] = useState(false);
 
   function modifier(e) {
     setChamps({ ...champs, [e.target.name]: e.target.value });
@@ -16,18 +17,12 @@ export default function Inscription() {
     setErreur("");
     try {
       await inscrire(champs);
-      setFait(true);
+      navigate(`/connexion${location.search}`, {
+        state: { message: "Compte créé. Connectez-vous pour continuer." },
+      });
     } catch (e) {
       setErreur(e.message);
     }
-  }
-
-  if (fait) {
-    return (
-      <main className="carte-connexion">
-        <p>Compte créé. <Link to="/connexion">Se connecter</Link></p>
-      </main>
-    );
   }
 
   return (
@@ -43,7 +38,7 @@ export default function Inscription() {
         <button type="submit" className="btn btn-primaire">Créer mon compte</button>
       </form>
       <p className="texte-doux">
-        Déjà inscrit ? <Link to="/connexion">Se connecter</Link>
+        Déjà inscrit ? <Link to={`/connexion${location.search}`}>Se connecter</Link>
       </p>
     </main>
   );
