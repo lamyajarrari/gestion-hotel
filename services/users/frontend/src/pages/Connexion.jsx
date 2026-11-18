@@ -3,9 +3,13 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { connecter } from "../api/auth.js";
 
 // Seules ces applications peuvent recevoir un jeton
-const RETOURS_AUTORISES = ["http://localhost:3001"];
-const RETOUR_PAR_DEFAUT = "http://localhost:3001";
-
+const RETOURS_AUTORISES = [
+  "http://localhost:3001", // chambres (Docker)
+  "http://localhost:5173", // chambres (dev)
+  "http://localhost:3002", // réservations (Docker)
+  "http://localhost:5174", // réservations (dev)
+  "http://localhost:3003", // housekeeping
+];
 function retourAutorise(url) {
   try {
     return RETOURS_AUTORISES.includes(new URL(url).origin);
