@@ -1,14 +1,14 @@
-
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   CalendarDays,
   PlusCircle,
   BedDouble,
+  Building2,
   LogOut
 } from "lucide-react";
-import logo from "../assets/logo.jpeg";
-import { effacerToken } from "../auth/session.js";
+const logo = "/images/logo.png";
+import { effacerToken, lireToken } from "../auth/session.js";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -16,6 +16,15 @@ export default function Navbar() {
   const deconnexion = () => {
     effacerToken();
     navigate("/connexion");
+  };
+
+  const allerVersChambres = (e) => {
+    e.preventDefault();
+    const token = lireToken();
+    const url = token
+      ? `http://localhost:3001/admin?token=${encodeURIComponent(token)}`
+      : "http://localhost:3001/admin";
+    window.location.href = url;
   };
 
   const liens = [
@@ -67,6 +76,15 @@ export default function Navbar() {
                 <span>{label}</span>
               </NavLink>
             ))}
+
+            <a
+              href="http://localhost:3001/admin"
+              onClick={allerVersChambres}
+              className="lien"
+            >
+              <Building2 size={18} />
+              <span>Chambres</span>
+            </a>
           </div>
         </div>
 

@@ -1,9 +1,13 @@
+import logging
 from datetime import date
 
 from django.db import transaction
 from django.utils import timezone
 
+from . import clients
 from .models import Chambre
+
+logger = logging.getLogger(__name__)
 
 E = Chambre.Etat
 
@@ -37,6 +41,20 @@ def changer_etat(chambre_id, nouvel_etat):
 
     chambre.etat = nouvel_etat
     chambre.save(update_fields=["etat", "updated_at"])
+    return chambre
+
+
+def changer_etat_et_notifier(chambre_id, nouvel_etat):
+    """Change l'état, puis prévient housekeeping si la chambre passe à nettoyer."""
+    ancien_etat = Chambre.objects.values_list("etat", flat=True).get(pk=chambre_id)
+    chambre = changer_etat(chambre_id, nouvel_etat)
+
+    if nouvel_etat == E.A_NETTOYER and ancien_etat != E.A_NETTOYER:
+        try:
+            clients.creer_tache_menage(chambre.pk)
+        except clients.ServiceIndisponible:
+            # L'état est déjà changé : on ne casse pas, on note l'incident.
+            logger.warning("Tâche de ménage non créée pour la chambre %s", chambre.pk)
     return chambre
 
 

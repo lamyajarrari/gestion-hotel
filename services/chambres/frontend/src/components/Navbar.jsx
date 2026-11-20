@@ -1,14 +1,27 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { effacerToken, lireToken } from "../auth/session.js";
+import { effacerToken, lireRole, lireToken } from "../auth/session.js";
 
 export default function Navbar() {
   const navigate = useNavigate();
   useLocation(); // relit le token à chaque changement de page
-  const connecte = Boolean(lireToken());
+  const token = lireToken();
+  const connecte = Boolean(token);
+  const estAdmin = connecte && lireRole() === "admin";
 
   function deconnecter() {
     effacerToken();
     navigate("/");
+  }
+
+  function allerVersReservations(e) {
+    e.preventDefault();
+    if (!token) {
+      navigate("/connexion");
+      return;
+    }
+
+    const cible = estAdmin ? "/admin/reservations" : "/client/reservations";
+    window.location.href = `http://localhost:3002${cible}?token=${encodeURIComponent(token)}`;
   }
 
   return (
@@ -20,7 +33,14 @@ export default function Navbar() {
         </Link>
         <nav className="liens">
           <NavLink to="/chambres" className="lien">Chambres</NavLink>
-          {connecte && <NavLink to="/admin" className="lien">Administration</NavLink>}
+          <a
+            href="http://localhost:3002"
+            onClick={allerVersReservations}
+            className="lien"
+          >
+            Réservations
+          </a>
+          {estAdmin && <NavLink to="/admin" className="lien">Administration</NavLink>}
           {connecte ? (
             <button className="btn btn-secondaire btn-petit" onClick={deconnecter}>
               Déconnexion

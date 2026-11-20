@@ -1,15 +1,9 @@
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = (
-    "postgresql+psycopg://riad:Riad2026_DB_Secure!@localhost:5432/riadmanager"
-)
+from app.config import settings
 
-engine = create_engine(
-    DATABASE_URL,
-    echo=True
-)
+engine = create_engine(settings.DATABASE_URL)
 
 SessionLocal = sessionmaker(
     autocommit=False,

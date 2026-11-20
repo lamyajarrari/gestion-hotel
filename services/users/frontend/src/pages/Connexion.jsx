@@ -1,9 +1,17 @@
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { connecter } from "../api/auth.js";
 
 // Seules ces applications peuvent recevoir un jeton
-const RETOURS_AUTORISES = ["http://localhost:3001"];
+const RETOURS_AUTORISES = [
+  "http://localhost:3001", // chambres (Docker)
+  "http://localhost:5173", // chambres (dev)
+  "http://localhost:3002", // réservations (Docker)
+  "http://localhost:5174", // réservations (dev)
+  "http://localhost:3003", // housekeeping
+];
+// Destination par défaut après connexion : l'interface chambres
+const RETOUR_PAR_DEFAUT = "http://localhost:3001";
 
 function retourAutorise(url) {
   try {
@@ -15,7 +23,9 @@ function retourAutorise(url) {
 
 export default function Connexion() {
   const [params] = useSearchParams();
-  const retour = params.get("retour");
+  const location = useLocation();
+  const retour = params.get("retour") || RETOUR_PAR_DEFAUT;
+  const message = location.state?.message;
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState("");
@@ -28,7 +38,7 @@ export default function Connexion() {
     setChargement(true);
     try {
       const { jeton, role } = await connecter(email, motDePasse);
-      if (retour && retourAutorise(retour)) {
+      if (retourAutorise(retour)) {
         const fragment = `jeton=${encodeURIComponent(jeton)}&role=${encodeURIComponent(role)}`;
         window.location.href = `${retour}#${fragment}`;
       } else {
@@ -57,6 +67,7 @@ export default function Connexion() {
     <main className="carte-connexion">
       <p className="etiquette">Riad Souss</p>
       <h1>Connexion</h1>
+      {message && <p className="texte-doux">{message}</p>}
       <form onSubmit={soumettre}>
         <label className="champ">
           E-mail
@@ -70,9 +81,10 @@ export default function Connexion() {
         <button type="submit" className="btn btn-primaire" disabled={chargement}>
           {chargement ? "Connexion..." : "Se connecter"}
         </button>
+        <p className="texte-doux"><Link to="/mot-de-passe-oublie">Mot de passe oublié ?</Link></p>
       </form>
       <p className="texte-doux">
-        Pas encore de compte ? <Link to="/inscription">Créer un compte</Link>
+        Pas encore de compte ? <Link to={`/inscription${location.search}`}>Créer un compte</Link>
       </p>
     </main>
   );

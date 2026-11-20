@@ -21,7 +21,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3001"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3001", "http://localhost:3002"]
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
@@ -46,6 +46,10 @@ REST_FRAMEWORK = {
 
 JWT_SECRET = os.environ.get("JWT_SECRET", "dev-only-jwt-secret-a-remplacer-par-32-caracteres-minimum")
 INTERNAL_API_TOKEN = os.environ.get("INTERNAL_API_TOKEN", "dev-only-internal-token")
+
+# Adresses des autres services (dans Docker : nom du service + port interne)
+RESERVATIONS_URL = os.environ.get("RESERVATIONS_URL", "http://reservations-api:8000")
+HOUSEKEEPING_URL = os.environ.get("HOUSEKEEPING_URL", "http://housekeeping-api:8000")
 
 
 LANGUAGE_CODE = "fr-fr"

@@ -1,0 +1,6 @@
+.venv
+__pycache__
+*.pyc
+tests_reservations
+test_db.py
+.env

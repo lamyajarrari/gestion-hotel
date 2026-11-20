@@ -1,31 +1,111 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { inscrire } from "../api/auth.js";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { inscrire, renvoyerCode, verifierCode } from "../api/auth.js";
 
 export default function Inscription() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [champs, setChamps] = useState({ prenom: "", nom: "", email: "", mot_de_passe: "" });
+  const [etapeVerification, setEtapeVerification] = useState(false);
+  const [code, setCode] = useState("");
+  const [info, setInfo] = useState("");
   const [erreur, setErreur] = useState("");
-  const [fait, setFait] = useState(false);
+  const [chargement, setChargement] = useState(false);
 
   function modifier(e) {
     setChamps({ ...champs, [e.target.name]: e.target.value });
   }
 
-  async function soumettre(evenement) {
+  async function soumettreInscription(evenement) {
     evenement.preventDefault();
     setErreur("");
+    setInfo("");
+    setChargement(true);
     try {
-      await inscrire(champs);
-      setFait(true);
+      const res = await inscrire(champs);
+      setInfo(res.detail || "Un code à 6 chiffres a été envoyé à votre adresse e-mail.");
+      setEtapeVerification(true);
     } catch (e) {
       setErreur(e.message);
+    } finally {
+      setChargement(false);
     }
   }
 
-  if (fait) {
+  async function soumettreVerification(evenement) {
+    evenement.preventDefault();
+    setErreur("");
+    setChargement(true);
+    try {
+      await verifierCode(champs.email, code);
+      navigate(`/connexion${location.search}`, {
+        state: { message: "Adresse e-mail vérifiée ! Vous pouvez maintenant vous connecter." },
+      });
+    } catch (e) {
+      setErreur(e.message);
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  async function handleRenvoyer() {
+    setErreur("");
+    setInfo("");
+    setChargement(true);
+    try {
+      const res = await renvoyerCode(champs.email);
+      setInfo(res.detail);
+    } catch (e) {
+      setErreur(e.message);
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  if (etapeVerification) {
     return (
       <main className="carte-connexion">
-        <p>Compte créé. <Link to="/connexion">Se connecter</Link></p>
+        <p className="etiquette">Riad Souss</p>
+        <h1>Vérifiez votre e-mail</h1>
+        <p className="texte-doux">
+          Saisissez le code à 6 chiffres envoyé à <strong>{champs.email}</strong>.
+        </p>
+
+        <form onSubmit={soumettreVerification}>
+          <label className="champ">
+            Code de vérification
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              placeholder="123456"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              required
+              autoFocus
+            />
+          </label>
+
+          {info && <p className="texte-doux" style={{ color: "#2d6a4f" }}>{info}</p>}
+          {erreur && <p className="alerte" role="alert">{erreur}</p>}
+
+          <button type="submit" className="btn btn-primaire" disabled={chargement || code.length !== 6}>
+            {chargement ? "Vérification..." : "Valider mon compte"}
+          </button>
+        </form>
+
+        <p className="texte-doux" style={{ marginTop: "14px" }}>
+          Vous n'avez rien reçu ?{" "}
+          <button
+            type="button"
+            onClick={handleRenvoyer}
+            disabled={chargement}
+            style={{ background: "none", border: "none", textDecoration: "underline", cursor: "pointer", padding: 0, color: "inherit" }}
+          >
+            Renvoyer le code
+          </button>
+        </p>
       </main>
     );
   }
@@ -34,16 +114,18 @@ export default function Inscription() {
     <main className="carte-connexion">
       <p className="etiquette">Riad Souss</p>
       <h1>Créer un compte</h1>
-      <form onSubmit={soumettre}>
+      <form onSubmit={soumettreInscription}>
         <label className="champ">Prénom<input name="prenom" value={champs.prenom} onChange={modifier} required /></label>
         <label className="champ">Nom<input name="nom" value={champs.nom} onChange={modifier} required /></label>
         <label className="champ">E-mail<input type="email" name="email" value={champs.email} onChange={modifier} required /></label>
         <label className="champ">Mot de passe (8 caractères minimum)<input type="password" name="mot_de_passe" value={champs.mot_de_passe} onChange={modifier} required /></label>
         {erreur && <p className="alerte" role="alert">{erreur}</p>}
-        <button type="submit" className="btn btn-primaire">Créer mon compte</button>
+        <button type="submit" className="btn btn-primaire" disabled={chargement}>
+          {chargement ? "Envoi du code..." : "Créer mon compte"}
+        </button>
       </form>
       <p className="texte-doux">
-        Déjà inscrit ? <Link to="/connexion">Se connecter</Link>
+        Déjà inscrit ? <Link to={`/connexion${location.search}`}>Se connecter</Link>
       </p>
     </main>
   );

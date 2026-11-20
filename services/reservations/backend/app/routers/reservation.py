@@ -1,9 +1,9 @@
-
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.auth import verifier_jeton
 from app.database import get_db
 from app.models.reservation import Reservation, StatutReservation
 from app.schemas.reservation import (
@@ -13,7 +13,7 @@ from app.schemas.reservation import (
 )
 
 router = APIRouter(
-    prefix="/reservations",
+    prefix="/api/reservations",
     tags=["Réservations"]
 )
 
@@ -61,7 +61,12 @@ def verifier_disponibilite(
 
 
 # 1. Créer une réservation
-@router.post("/", response_model=ReservationResponse, status_code=201)
+@router.post(
+    "/",
+    response_model=ReservationResponse,
+    status_code=201,
+    dependencies=[Depends(verifier_jeton)]
+)
 def creer_reservation(
     reservation: ReservationCreate,
     db: Session = Depends(get_db)
@@ -117,7 +122,11 @@ def obtenir_reservation(
 
 
 # 4. Modifier une réservation
-@router.put("/{id_reservation}", response_model=ReservationResponse)
+@router.put(
+    "/{id_reservation}",
+    response_model=ReservationResponse,
+    dependencies=[Depends(verifier_jeton)]
+)
 def modifier_reservation(
     id_reservation: str,
     modifications: ReservationUpdate,
@@ -167,7 +176,10 @@ def modifier_reservation(
 
 
 # 5. Supprimer une réservation
-@router.delete("/{id_reservation}")
+@router.delete(
+    "/{id_reservation}",
+    dependencies=[Depends(verifier_jeton)]
+)
 def supprimer_reservation(
     id_reservation: str,
     db: Session = Depends(get_db)
@@ -241,7 +253,11 @@ def changer_statut(
 
 
 # 7. Confirmer une réservation
-@router.patch("/{id_reservation}/confirmer", response_model=ReservationResponse)
+@router.patch(
+    "/{id_reservation}/confirmer",
+    response_model=ReservationResponse,
+    dependencies=[Depends(verifier_jeton)]
+)
 def confirmer_reservation(
     id_reservation: str,
     db: Session = Depends(get_db)
@@ -255,7 +271,11 @@ def confirmer_reservation(
 
 
 # 8. Annuler une réservation
-@router.patch("/{id_reservation}/annuler", response_model=ReservationResponse)
+@router.patch(
+    "/{id_reservation}/annuler",
+    response_model=ReservationResponse,
+    dependencies=[Depends(verifier_jeton)]
+)
 def annuler_reservation(
     id_reservation: str,
     db: Session = Depends(get_db)
@@ -279,7 +299,11 @@ def annuler_reservation(
 
 
 # 9. Démarrer un séjour
-@router.patch("/{id_reservation}/demarrer", response_model=ReservationResponse)
+@router.patch(
+    "/{id_reservation}/demarrer",
+    response_model=ReservationResponse,
+    dependencies=[Depends(verifier_jeton)]
+)
 def demarrer_sejour(
     id_reservation: str,
     db: Session = Depends(get_db)
@@ -293,7 +317,11 @@ def demarrer_sejour(
 
 
 # 10. Terminer un séjour
-@router.patch("/{id_reservation}/terminer", response_model=ReservationResponse)
+@router.patch(
+    "/{id_reservation}/terminer",
+    response_model=ReservationResponse,
+    dependencies=[Depends(verifier_jeton)]
+)
 def terminer_sejour(
     id_reservation: str,
     db: Session = Depends(get_db)

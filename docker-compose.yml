@@ -1,4 +1,3 @@
-
 services:
   # ==========================================
   # DATABASE - POSTGRESQL
@@ -42,27 +41,41 @@ services:
       - chambres_media:/app/media
     restart: unless-stopped
 
+  chambres-web:
+    build:
+      context: ./services/chambres/frontend
+      args:
+        VITE_API_URL: http://localhost:8001
+    ports:
+      - "3001:80"
+    depends_on:
+      - chambres-api
+    restart: unless-stopped
+
   # ==========================================
   # MICROSERVICE RESERVATIONS
   # ==========================================
-  # reservations-api:
-  #   build: ./services/reservations/backend
-  #   env_file:
-  #     - ./.env
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8002:8000"
-  #   restart: unless-stopped
+  reservations-api:
+    build: ./services/reservations/backend
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8002:8000"
+    restart: unless-stopped
 
-  # reservations-web:
-  #   build: ./services/reservations/frontend
-  #   ports:
-  #     - "3002:80"
-  #   depends_on:
-  #     - reservations-api
-  #   restart: unless-stopped
+  reservations-web:
+    build: ./services/reservations/frontend
+    ports:
+      - "3002:80"
+    depends_on:
+      - reservations-api
+    restart: unless-stopped
 
   # ==========================================
   # MICROSERVICE HOUSEKEEPING
@@ -81,16 +94,41 @@ services:
   # ==========================================
   # MICROSERVICE USERS
   # ==========================================
-  # users-api:
-  #   build: ./services/users/backend
-  #   env_file:
-  #     - ./.env
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8004:8000"
-  #   restart: unless-stopped
+  users-api:
+    build: ./services/users/backend
+    env_file:
+      - path: ./.env
+      - path: ./services/users/.env
+        required: false
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8004:8000"
+    restart: unless-stopped
+
+  users-web:
+    build:
+      context: ./services/users/frontend
+      args:
+        VITE_API_URL: http://localhost:8004
+    ports:
+      - "3004:80"
+    depends_on:
+      - users-api
+    restart: unless-stopped
+
+  # ==========================================
+  # BOÎTE MAIL DE TEST
+  # ==========================================
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+    restart: unless-stopped
 
 volumes:
   pgdata:

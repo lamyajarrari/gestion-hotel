@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from . import clients
 from .models import Chambre, Indisponibilite
 
 
@@ -54,6 +55,18 @@ class IndisponibiliteSerializer(serializers.ModelSerializer):
             if qs.exists():
                 raise serializers.ValidationError(
                     "Cette chambre a déjà une indisponibilité qui chevauche cette période."
+                )
+
+            # Appel au service réservations
+            try:
+                a_reservation = clients.reservation_existe(chambre.numero, debut, fin)
+            except clients.ServiceIndisponible:
+                raise serializers.ValidationError(
+                    "Le service réservations est indisponible, réessayez plus tard."
+                )
+            if a_reservation:
+                raise serializers.ValidationError(
+                    "Impossible : une réservation existe sur cette période."
                 )
 
         return data

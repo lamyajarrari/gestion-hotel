@@ -75,7 +75,7 @@ class ChambreAdminViewSet(viewsets.ModelViewSet):
         donnees = EtatSerializer(data=request.data)
         donnees.is_valid(raise_exception=True)
         try:
-            services.changer_etat(chambre.pk, donnees.validated_data["etat"])
+            services.changer_etat_et_notifier(chambre.pk, donnees.validated_data["etat"])
         except services.TransitionInvalide as erreur:
             return Response({"detail": str(erreur)}, status=status.HTTP_409_CONFLICT)
         chambre.refresh_from_db()
@@ -159,7 +159,7 @@ class ChambreInterneViewSet(viewsets.ViewSet):
         donnees = EtatSerializer(data=request.data)
         donnees.is_valid(raise_exception=True)
         try:
-            services.changer_etat(chambre.pk, donnees.validated_data["etat"])
+            services.changer_etat_et_notifier(chambre.pk, donnees.validated_data["etat"])
         except services.TransitionInvalide as erreur:
             return Response({"detail": str(erreur)}, status=status.HTTP_409_CONFLICT)
         chambre.refresh_from_db()

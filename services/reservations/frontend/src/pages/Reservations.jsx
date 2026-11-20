@@ -1,75 +1,81 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Search, Eye, CheckCircle, XCircle, Plus } from "lucide-react";
 import {
-  Search,
-  Eye,
-  XCircle,
-  Plus
-} from "lucide-react";
+  obtenirReservations,
+  confirmerReservation,
+  annulerReservation,
+} from "../api.js";
+
+function formaterDate(iso) {
+  const [annee, mois, jour] = iso.split("-");
+  return `${jour}/${mois}/${annee}`;
+}
+
+function versAffichage(r) {
+  return {
+    id: r.idReservation,
+    client: r.client_id,
+    chambre: `Chambre ${r.chambre_id}`,
+    arrivee: formaterDate(r.dateDebut),
+    depart: formaterDate(r.dateFin),
+    personnes: r.nombrePersonnes,
+    statut: r.statut,
+  };
+}
 
 function Reservations() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [reservations, setReservations] = useState([]);
+  const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState("");
 
-  const [reservations, setReservations] = useState([
-    {
-      id: 1,
-      client: "Ahmed Benali",
-      chambre: "Chambre 101",
-      arrivee: "15/11/2026",
-      depart: "18/11/2026",
-      personnes: 2,
-      statut: "CONFIRMEE"
-    },
-    {
-      id: 2,
-      client: "Sara Amrani",
-      chambre: "Chambre 203",
-      arrivee: "17/11/2026",
-      depart: "20/11/2026",
-      personnes: 1,
-      statut: "EN_ATTENTE"
-    },
-    {
-      id: 3,
-      client: "Youssef Alaoui",
-      chambre: "Chambre 105",
-      arrivee: "19/11/2026",
-      depart: "22/11/2026",
-      personnes: 3,
-      statut: "CONFIRMEE"
-    },
-    {
-      id: 4,
-      client: "Salma Idrissi",
-      chambre: "Chambre 302",
-      arrivee: "21/11/2026",
-      depart: "24/11/2026",
-      personnes: 2,
-      statut: "ANNULEE"
-    }
-  ]);
+  function chargerReservations() {
+    setChargement(true);
+    setErreur("");
+    obtenirReservations()
+      .then((donnees) => setReservations(donnees.map(versAffichage)))
+      .catch((e) => setErreur(e.message))
+      .finally(() => setChargement(false));
+  }
 
-  const filteredReservations = reservations.filter((reservation) =>
-    reservation.client.toLowerCase().includes(search.toLowerCase()) ||
-    reservation.chambre.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    chargerReservations();
+  }, []);
+
+  const filteredReservations = reservations.filter(
+    (reservation) =>
+      reservation.client.toLowerCase().includes(search.toLowerCase()) ||
+      reservation.chambre.toLowerCase().includes(search.toLowerCase())
   );
 
-  function annulerReservation(id) {
+  async function confirmer(id) {
+    const confirmation = window.confirm(
+      "Voulez-vous confirmer cette réservation ?"
+    );
+    if (!confirmation) return;
+
+    try {
+      await confirmerReservation(id);
+      chargerReservations();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function annuler(id) {
     const confirmation = window.confirm(
       "Voulez-vous vraiment annuler cette réservation ?"
     );
-
     if (!confirmation) return;
 
-    setReservations((previous) =>
-      previous.map((reservation) =>
-        reservation.id === id
-          ? { ...reservation, statut: "ANNULEE" }
-          : reservation
-      )
-    );
+    try {
+      await annulerReservation(id);
+      chargerReservations();
+    } catch (e) {
+      alert(e.message);
+    }
   }
 
   function getStatusClass(statut) {
@@ -86,14 +92,11 @@ function Reservations() {
 
   return (
     <main className="page reservations-page">
-
       <header className="page-header reservation-header">
         <div>
           <span className="etiquette">GESTION HÔTELIÈRE</span>
           <h1>Gestion des réservations</h1>
-          <p>
-            Consultez et gérez toutes les réservations de votre hôtel.
-          </p>
+          <p>Consultez et gérez toutes les réservations de votre hôtel.</p>
         </div>
 
         <button
@@ -105,6 +108,11 @@ function Reservations() {
         </button>
       </header>
 
+      {chargement && (
+        <p className="texte-doux">Chargement des réservations...</p>
+      )}
+      {erreur && <p className="alerte">{erreur}</p>}
+
       <section className="reservation-summary">
         <div className="content-card">
           <span>Total des réservations</span>
@@ -114,27 +122,26 @@ function Reservations() {
         <div className="content-card">
           <span>Confirmées</span>
           <strong>
-            {reservations.filter(r => r.statut === "CONFIRMEE").length}
+            {reservations.filter((r) => r.statut === "CONFIRMEE").length}
           </strong>
         </div>
 
         <div className="content-card">
           <span>En attente</span>
           <strong>
-            {reservations.filter(r => r.statut === "EN_ATTENTE").length}
+            {reservations.filter((r) => r.statut === "EN_ATTENTE").length}
           </strong>
         </div>
 
         <div className="content-card">
           <span>Annulées</span>
           <strong>
-            {reservations.filter(r => r.statut === "ANNULEE").length}
+            {reservations.filter((r) => r.statut === "ANNULEE").length}
           </strong>
         </div>
       </section>
 
       <section className="content-card reservation-table-card">
-
         <div className="table-heading">
           <div>
             <h3>Liste des réservations</h3>
@@ -178,7 +185,9 @@ function Reservations() {
 
                   <td>
                     <span
-                      className={`status-badge ${getStatusClass(reservation.statut)}`}
+                      className={`status-badge ${getStatusClass(
+                        reservation.statut
+                      )}`}
                     >
                       {getStatusLabel(reservation.statut)}
                     </span>
@@ -197,10 +206,20 @@ function Reservations() {
                       </button>
 
                       <button
+                        className="action-btn confirm-btn"
+                        title="Confirmer"
+                        style={{ color: "#16a34a", backgroundColor: "#dcfce7" }}
+                        disabled={reservation.statut !== "EN_ATTENTE"}
+                        onClick={() => confirmer(reservation.id)}
+                      >
+                        <CheckCircle size={17} />
+                      </button>
+
+                      <button
                         className="action-btn cancel-btn"
                         title="Annuler"
                         disabled={reservation.statut === "ANNULEE"}
-                        onClick={() => annulerReservation(reservation.id)}
+                        onClick={() => annuler(reservation.id)}
                       >
                         <XCircle size={17} />
                       </button>
@@ -209,7 +228,7 @@ function Reservations() {
                 </tr>
               ))}
 
-              {filteredReservations.length === 0 && (
+              {filteredReservations.length === 0 && !chargement && (
                 <tr>
                   <td colSpan="7" className="empty-table">
                     Aucune réservation trouvée.
@@ -219,7 +238,6 @@ function Reservations() {
             </tbody>
           </table>
         </div>
-
       </section>
     </main>
   );

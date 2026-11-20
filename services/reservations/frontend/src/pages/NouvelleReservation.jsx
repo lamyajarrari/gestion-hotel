@@ -1,7 +1,7 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, ArrowLeft } from "lucide-react";
+import { creerReservation } from "../api.js";
 
 export default function NouvelleReservation() {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ export default function NouvelleReservation() {
     chambre: "",
     arrivee: "",
     depart: "",
-    personnes: 1
+    personnes: 1,
   });
 
   const [erreur, setErreur] = useState("");
@@ -21,7 +21,7 @@ export default function NouvelleReservation() {
     setForme((f) => ({ ...f, [cle]: e.target.value }));
   };
 
-  function soumettre(e) {
+  async function soumettre(e) {
     e.preventDefault();
     setErreur("");
 
@@ -33,27 +33,18 @@ export default function NouvelleReservation() {
     setEnCours(true);
 
     try {
-      const nouvelleReservation = {
-        id: Date.now(),
-        ...forme,
-        chambre: `Chambre ${forme.chambre}`,
-        personnes: Number(forme.personnes),
-        statut: "EN_ATTENTE"
-      };
-
-      const anciennesReservations = JSON.parse(
-        localStorage.getItem("reservations") || "[]"
-      );
-
-      localStorage.setItem(
-        "reservations",
-        JSON.stringify([...anciennesReservations, nouvelleReservation])
-      );
+      await creerReservation({
+        client_id: forme.client.trim(),
+        chambre_id: Number(forme.chambre),
+        dateDebut: forme.arrivee,
+        dateFin: forme.depart,
+        nombrePersonnes: Number(forme.personnes),
+      });
 
       alert("Réservation enregistrée avec succès !");
-      navigate("/admin");
+      navigate("/admin/reservations");
     } catch (err) {
-      setErreur("Une erreur est survenue lors de l'enregistrement.");
+      setErreur(err.message);
       setEnCours(false);
     }
   }

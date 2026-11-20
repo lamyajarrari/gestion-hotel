@@ -1,11 +1,12 @@
-
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { obtenirChambres, creerReservation } from "../../api";
 import { lireToken } from "../../auth/session";
 
 function Reserver() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const chambrePreselectionnee = searchParams.get("chambre") || "";
 
   const [chambres, setChambres] = useState([]);
   const [chargementChambres, setChargementChambres] = useState(true);
@@ -13,17 +14,18 @@ function Reserver() {
   const [erreur, setErreur] = useState("");
 
   const [reservation, setReservation] = useState({
-    chambre_id: "",
+    chambre_id: chambrePreselectionnee,
     dateDebut: "",
     dateFin: "",
-    nombrePersonnes: 1
+    nombrePersonnes: 1,
   });
 
   useEffect(() => {
     async function chargerChambres() {
       try {
         const data = await obtenirChambres();
-        setChambres(data);
+        const liste = Array.isArray(data) ? data : data.results || [];
+        setChambres(liste);
       } catch (error) {
         setErreur(error.message || "Impossible de charger les chambres.");
       } finally {
@@ -39,7 +41,7 @@ function Reserver() {
 
     setReservation((ancienne) => ({
       ...ancienne,
-      [name]: value
+      [name]: value,
     }));
   }
 
@@ -54,7 +56,7 @@ function Reserver() {
     const base64 = partie.replace(/-/g, "+").replace(/_/g, "/");
     const payload = JSON.parse(atob(base64));
 
-    if (!payload.sub || payload.role !== "client") {
+    if (!payload.sub) {
       throw new Error("Compte client invalide.");
     }
 
@@ -83,7 +85,7 @@ function Reserver() {
         chambre_id: Number(reservation.chambre_id),
         dateDebut: reservation.dateDebut,
         dateFin: reservation.dateFin,
-        nombrePersonnes: Number(reservation.nombrePersonnes)
+        nombrePersonnes: Number(reservation.nombrePersonnes),
       };
 
       const resultat = await creerReservation(donnees);
@@ -93,7 +95,6 @@ function Reserver() {
       );
 
       navigate("/client/reservations");
-
     } catch (error) {
       setErreur(error.message || "Erreur lors de la création de la réservation.");
     } finally {
@@ -129,7 +130,7 @@ function Reserver() {
           </option>
 
           {chambres.map((chambre) => (
-            <option key={chambre.id} value={chambre.id}>
+            <option key={chambre.id} value={chambre.numero}>
               Chambre {chambre.numero} - {chambre.type}
               {" - "}
               {chambre.tarif} DH / nuit
