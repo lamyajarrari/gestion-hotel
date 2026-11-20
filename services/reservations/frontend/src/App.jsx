@@ -1,7 +1,14 @@
 
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet
+} from "react-router-dom";
 
-import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
+
 import Dashboard from "./pages/Dashboard";
 import Reservations from "./pages/Reservations";
 import NouvelleReservation from "./pages/NouvelleReservation";
@@ -11,41 +18,57 @@ import Connexion from "./pages/Connexion";
 import { lireToken } from "./auth/session.js";
 import "./index.css";
 
-function AdminProtege({ children }) {
-  return lireToken() ? children : <Navigate to="/connexion" replace />;
+// Protection de l'espace administrateur
+function AdminProtege() {
+  if (!lireToken()) {
+    return <Navigate to="/connexion" replace />;
+  }
+
+  return (
+    <>
+      <Navbar />
+      <Outlet />
+    </>
+  );
 }
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Page de connexion */}
         <Route path="/connexion" element={<Connexion />} />
 
+        {/* Espace administrateur : une seule Navbar */}
+        <Route element={<AdminProtege />}>
+          <Route path="/admin" element={<Dashboard />} />
+
+          <Route
+            path="/admin/reservations"
+            element={<Reservations />}
+          />
+
+          <Route
+            path="/admin/nouvelle-reservation"
+            element={<NouvelleReservation />}
+          />
+
+          <Route
+            path="/admin/sejours"
+            element={<Sejours />}
+          />
+        </Route>
+
+        {/* Redirection */}
         <Route
-          path="/admin/*"
-          element={
-            <AdminProtege>
-              <div className="app-layout">
-                <Sidebar />
-                <main className="main-content">
-                  <Routes>
-                    <Route index element={<Dashboard />} />
-                    <Route path="reservations" element={<Reservations />} />
-                    <Route
-                      path="nouvelle-reservation"
-                      element={<NouvelleReservation />}
-                    />
-                    <Route path="sejours" element={<Sejours />} />
-                  </Routes>
-                </main>
-              </div>
-            </AdminProtege>
-          }
+          path="/"
+          element={<Navigate to="/connexion" replace />}
         />
 
-        <Route path="/client" element={<h1>Espace client — bientôt disponible</h1>} />
-
-        <Route path="/" element={<Navigate to="/connexion" replace />} />
+        <Route
+          path="*"
+          element={<Navigate to="/connexion" replace />}
+        />
       </Routes>
     </BrowserRouter>
   );

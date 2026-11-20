@@ -1,16 +1,15 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Eye,
   XCircle,
-  CalendarDays,
   Plus
 } from "lucide-react";
 
-import Navbar from "../components/Navbar";
-
 function Reservations() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
   const [reservations, setReservations] = useState([
@@ -21,7 +20,7 @@ function Reservations() {
       arrivee: "15/11/2026",
       depart: "18/11/2026",
       personnes: 2,
-      statut: "CONFIRMEE",
+      statut: "CONFIRMEE"
     },
     {
       id: 2,
@@ -30,7 +29,7 @@ function Reservations() {
       arrivee: "17/11/2026",
       depart: "20/11/2026",
       personnes: 1,
-      statut: "EN_ATTENTE",
+      statut: "EN_ATTENTE"
     },
     {
       id: 3,
@@ -39,7 +38,7 @@ function Reservations() {
       arrivee: "19/11/2026",
       depart: "22/11/2026",
       personnes: 3,
-      statut: "CONFIRMEE",
+      statut: "CONFIRMEE"
     },
     {
       id: 4,
@@ -48,8 +47,8 @@ function Reservations() {
       arrivee: "21/11/2026",
       depart: "24/11/2026",
       personnes: 2,
-      statut: "ANNULEE",
-    },
+      statut: "ANNULEE"
+    }
   ]);
 
   const filteredReservations = reservations.filter((reservation) =>
@@ -86,25 +85,27 @@ function Reservations() {
   }
 
   return (
-    <>
-      <Navbar />
+    <main className="page reservations-page">
 
-      <div className="page-header reservation-header">
+      <header className="page-header reservation-header">
         <div>
+          <span className="etiquette">GESTION HÔTELIÈRE</span>
           <h1>Gestion des réservations</h1>
-          <p>Consultez et gérez toutes les réservations de votre hôtel.</p>
+          <p>
+            Consultez et gérez toutes les réservations de votre hôtel.
+          </p>
         </div>
 
         <button
           className="primary-btn"
-          onClick={() => window.location.href = "/nouvelle-reservation"}
+          onClick={() => navigate("/admin/nouvelle-reservation")}
         >
           <Plus size={17} />
           Nouvelle réservation
         </button>
-      </div>
+      </header>
 
-      <div className="reservation-summary">
+      <section className="reservation-summary">
         <div className="content-card">
           <span>Total des réservations</span>
           <strong>{reservations.length}</strong>
@@ -130,9 +131,10 @@ function Reservations() {
             {reservations.filter(r => r.statut === "ANNULEE").length}
           </strong>
         </div>
-      </div>
+      </section>
 
-      <div className="content-card reservation-table-card">
+      <section className="content-card reservation-table-card">
+
         <div className="table-heading">
           <div>
             <h3>Liste des réservations</h3>
@@ -141,6 +143,7 @@ function Reservations() {
 
           <div className="search-box">
             <Search size={18} />
+
             <input
               type="text"
               placeholder="Rechercher un client ou une chambre..."
@@ -172,17 +175,23 @@ function Reservations() {
                   <td>{reservation.arrivee}</td>
                   <td>{reservation.depart}</td>
                   <td>{reservation.personnes}</td>
+
                   <td>
-                    <span className={`status-badge ${getStatusClass(reservation.statut)}`}>
+                    <span
+                      className={`status-badge ${getStatusClass(reservation.statut)}`}
+                    >
                       {getStatusLabel(reservation.statut)}
                     </span>
                   </td>
+
                   <td>
                     <div className="table-actions">
                       <button
                         className="action-btn view-btn"
                         title="Consulter"
-                        onClick={() => alert(`Réservation de ${reservation.client}`)}
+                        onClick={() =>
+                          alert(`Réservation de ${reservation.client}`)
+                        }
                       >
                         <Eye size={17} />
                       </button>
@@ -210,8 +219,9 @@ function Reservations() {
             </tbody>
           </table>
         </div>
-      </div>
-    </>
+
+      </section>
+    </main>
   );
 }
 
