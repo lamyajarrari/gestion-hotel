@@ -45,55 +45,62 @@ services:
       - chambres-api
     restart: unless-stopped
 
-  # ----- reservations -----
-  # reservations-api:
-  #   build: ./services/reservations/backend
-  #   env_file:
-  #     - path: ./.env
-  #     - path: ./services/reservations/.env
-  #       required: false
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8002:8000"
-  #   restart: unless-stopped
-  #
-  # reservations-web:
-  #   build:
-  #     context: ./services/reservations/frontend
-  #     args:
-  #       VITE_API_URL: http://localhost:8002
-  #   ports:
-  #     - "3002:80"
-  #   depends_on:
-  #     - reservations-api
-  #   restart: unless-stopped
+    # ----- reservations -----
+  reservations-api:
+    build: ./services/reservations/backend
+    env_file:
+      - path: ./.env
+      - path: ./services/reservations/.env
+        required: false
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8002:8000"
+    restart: unless-stopped
+
+  reservations-web:
+    build:
+      context: ./services/reservations/frontend
+      args:
+        VITE_API_URL: http://localhost:8002
+    ports:
+      - "3002:80"
+    depends_on:
+      - reservations-api
+    restart: unless-stopped
+  # ----- housekeeping -----
 
   # ----- housekeeping -----
-  # housekeeping-api:
-  #   build: ./services/housekeeping/backend
-  #   env_file:
-  #     - path: ./.env
-  #     - path: ./services/housekeeping/.env
-  #       required: false
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   ports:
-  #     - "8003:8000"
-  #   restart: unless-stopped
-  #
-  # housekeeping-web:
-  #   build:
-  #     context: ./services/housekeeping/frontend
-  #     args:
-  #       VITE_API_URL: http://localhost:8003
-  #   ports:
-  #     - "3003:80"
-  #   depends_on:
-  #     - housekeeping-api
-  #   restart: unless-stopped
+  housekeeping-api:
+    build: ./services/housekeeping/backend
+    env_file:
+      - path: ./.env
+      - path: ./services/housekeeping/.env
+        required: false
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8006:8000"
+    restart: unless-stopped
+
+  housekeeping-web:
+    build:
+      context: ./services/housekeeping/frontend
+      args:
+        VITE_API_URL: http://localhost:8006
+    ports:
+      - "3003:80"
+    depends_on:
+      - housekeeping-api
+    restart: unless-stopped
 
   # ----- users -----
   users-api:

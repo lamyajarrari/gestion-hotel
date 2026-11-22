@@ -21,6 +21,16 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
+# Gabarits : nécessaires à la page Swagger (/api/housekeeping/docs/)
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+        "OPTIONS": {"context_processors": []},
+    }
+]
+STATIC_URL = "static/"
+
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 

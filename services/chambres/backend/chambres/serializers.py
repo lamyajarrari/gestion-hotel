@@ -59,7 +59,7 @@ class IndisponibiliteSerializer(serializers.ModelSerializer):
 
             # Appel au service réservations
             try:
-                a_reservation = clients.reservation_existe(chambre.pk, debut, fin)
+                a_reservation = clients.reservation_existe(chambre.numero, debut, fin)
             except clients.ServiceIndisponible:
                 raise serializers.ValidationError(
                     "Le service réservations est indisponible, réessayez plus tard."

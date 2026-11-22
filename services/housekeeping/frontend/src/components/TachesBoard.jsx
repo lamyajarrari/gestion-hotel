@@ -125,12 +125,12 @@ export default function TachesBoard({ mode, version, onChanged, onToast, onAuthE
             <tbody>
               {rows.map((s) => (
                 <tr key={s.id} className="border-t border-line align-top first:border-t-0">
-                  <td className="td font-medium">{s.chambre_id}</td>
+                  <td className="td font-medium">{s.chambre_numero || s.chambre_id}</td>
 
                   {mode === "taches" && (
                     <>
                       <td className="td">{TYPES[s.type]}</td>
-                      <td className="td">{s.agent_id}</td>
+                      <td className="td">{s.agent_nom || s.agent_id}</td>
                       <td className="td max-w-56 text-muted">{s.description || "—"}</td>
                       <td className="td"><Badge table={PRIORITES} value={s.priorite} /></td>
                       <td className="td"><Badge table={STATUTS} value={s.statut} /></td>
@@ -164,7 +164,7 @@ export default function TachesBoard({ mode, version, onChanged, onToast, onAuthE
                     <>
                       <td className="td max-w-56 text-muted">{s.description || TYPES[s.type]}</td>
                       <td className="td"><Badge table={PRIORITES} value={s.priorite} /></td>
-                      <td className="td">{s.agent_id}</td>
+                      <td className="td">{s.agent_nom || s.agent_id}</td>
                       <td className="td">
                         <Badge table={STATUTS} value={s.statut} />
                         {(s.date_debut || s.date_fin) && (
@@ -200,7 +200,7 @@ export default function TachesBoard({ mode, version, onChanged, onToast, onAuthE
                   {mode === "priorites" && (
                     <>
                       <td className="td max-w-56 text-muted">{s.description || TYPES[s.type]}</td>
-                      <td className="td">{s.agent_id}</td>
+                      <td className="td">{s.agent_nom || s.agent_id}</td>
                       <td className="td"><Badge table={STATUTS} value={s.statut} /></td>
                       <td className="td"><Badge table={PRIORITES} value={s.priorite} /></td>
                       <td className="td">
@@ -253,7 +253,7 @@ export default function TachesBoard({ mode, version, onChanged, onToast, onAuthE
       {modal?.kind === "delete" && (
         <Modal title="Supprimer la tâche" onClose={() => setModal(null)}>
           <p className="text-sm">
-            Supprimer le ménage de la chambre <b>{modal.s.chambre_id}</b>
+            Supprimer le ménage de la chambre <b>{modal.s.chambre_numero || modal.s.chambre_id}</b>
             {modal.s.description ? <> (« {modal.s.description} »)</> : null} ? Cette action est définitive.
           </p>
           <div className="mt-6 flex justify-end gap-3">
@@ -281,9 +281,9 @@ function DetailModal({ s, onClose }) {
       <Detail
         rows={[
           ["Identifiant", s.id],
-          ["Chambre", s.chambre_id],
+          ["Chambre", s.chambre_numero || s.chambre_id],
           ["Type", TYPES[s.type]],
-          ["Agent de ménage", s.agent_id],
+          ["Agent de ménage", s.agent_nom || s.agent_id],
           ["Statut", <Badge key="st" table={STATUTS} value={s.statut} />],
           ["Priorité", <Badge key="pr" table={PRIORITES} value={s.priorite} />],
           ["Date de demande", dateHeure(s.date_creation)],
@@ -322,7 +322,7 @@ function EditModal({ s, onClose, onSave }) {
         className="space-y-4"
       >
         <p className="text-sm text-muted">
-          Chambre {s.chambre_id} · agent {s.agent_id} · <Badge table={STATUTS} value={s.statut} />
+          Chambre {s.chambre_numero || s.chambre_id} · {s.agent_nom || `agent ${s.agent_id}`} · <Badge table={STATUTS} value={s.statut} />
           <span className="block pt-1 text-xs">Le statut change avec les boutons de l'écran « Statuts ».</span>
         </p>
         <label className="block text-sm text-muted">

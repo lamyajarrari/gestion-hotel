@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { currentRole, getToken, setToken } from "./api.js";
+import { CHAMBRES_ACCUEIL, URL_DECONNEXION, currentRole, getToken, lienChambres, lienReservations, lienUsers, recupererJetonDansURL, setToken } from "./api.js";
 import Login from "./components/Login.jsx";
 import ChambresANettoyer from "./components/ChambresANettoyer.jsx";
 import AssignModal from "./components/AssignModal.jsx";
 import TachesBoard from "./components/TachesBoard.jsx";
 import DemandesAdmin from "./components/DemandesAdmin.jsx";
 import { DemandeForm, MesDemandes } from "./components/DemandesClient.jsx";
+
+recupererJetonDansURL(); // jeton reçu depuis la page de connexion du service users
 
 const ADMIN_TABS = [
   ["chambres", "Chambres à nettoyer", "Chambres libérées en attente d'un ménage de départ."],
@@ -19,6 +21,8 @@ const CLIENT_TABS = [
   ["suivi", "Suivre mes demandes", "Consultez l'état de vos demandes de nettoyage."],
 ];
 
+const LIEN_SERVICE = "rounded-full px-4 py-2 text-sm text-muted transition hover:text-navy";
+
 export default function App() {
   const [token, setTok] = useState(getToken());
   const role = token ? currentRole(token) : null;
@@ -28,10 +32,17 @@ export default function App() {
   const [toast, setToast] = useState(null);
 
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
+  // Session expirée ou refusée : on efface le jeton, la page de connexion (service users) prend le relais.
   const logout = useCallback(() => {
     setToken("");
     setTok("");
     setTab(null);
+  }, []);
+  // Bouton « Déconnexion » : on vide notre jeton, puis users et chambres vident le leur
+  // et on arrive sur la première page, déconnecté.
+  const deconnecter = useCallback(() => {
+    setToken("");
+    window.location.replace(URL_DECONNEXION);
   }, []);
 
   useEffect(() => {
@@ -41,14 +52,20 @@ export default function App() {
   }, [toast]);
 
   if (!token) {
+    return <Login />;
+  }
+
+  if (role === "autre") {
+    // Pas d'interface housekeeping pour l'agent de ménage (ni pour un rôle inconnu).
     return (
-      <Login
-        onLogin={(t) => {
-          setToken(t);
-          setTok(t);
-          setTab(null);
-        }}
-      />
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+        <img src="/images/logo.png" alt="" className="h-12 w-auto" />
+        <h1 className="text-2xl font-bold">Pas d'interface pour votre rôle</h1>
+        <p className="max-w-md text-sm text-muted">
+          Cette interface est réservée aux clients et aux gestionnaires.
+        </p>
+        <button onClick={deconnecter} className="btn btn-primary px-6 py-3">Retour à l'accueil</button>
+      </div>
     );
   }
 
@@ -61,8 +78,27 @@ export default function App() {
     <div className="min-h-screen">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
-          <p className="font-serif text-2xl font-bold text-navy">Riad Souss</p>
-          <nav className="flex flex-wrap items-center gap-1">
+          <a href={CHAMBRES_ACCUEIL} className="flex items-center gap-3" title="Retour à l'accueil des chambres">
+            <img src="/images/logo.png" alt="" className="h-11 w-auto" />
+            <span className="font-serif text-2xl font-bold text-navy">Riad Souss</span>
+          </a>
+          <nav className="flex flex-wrap items-center gap-1" aria-label="Services">
+            <a href={lienChambres(role)} className={LIEN_SERVICE}>Chambres</a>
+            <a href={lienReservations(role)} className={LIEN_SERVICE}>Réservations</a>
+            <span className="rounded-full bg-[#ece9e4] px-4 py-2 text-sm font-medium text-navy" aria-current="page">
+              Housekeeping
+            </span>
+            {role === "admin" && (
+              <a href={lienUsers("utilisateurs", role)} className={LIEN_SERVICE}>Personnel</a>
+            )}
+            <a href={lienUsers("compte", role)} className={LIEN_SERVICE}>Mon profil</a>
+            <button onClick={deconnecter} className="btn btn-outline ml-2 px-4 py-2">
+              Déconnexion
+            </button>
+          </nav>
+        </div>
+        <div className="border-t border-line">
+          <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-1 px-6 py-2" aria-label="Housekeeping">
             {tabs.map(([k, label]) => (
               <button
                 key={k}
@@ -74,9 +110,6 @@ export default function App() {
                 {label}
               </button>
             ))}
-            <button onClick={logout} className="btn btn-outline ml-2 px-4 py-2">
-              Déconnexion
-            </button>
           </nav>
         </div>
       </header>
@@ -97,7 +130,7 @@ export default function App() {
         {key === "chambres" && (
           <ChambresANettoyer
             version={version}
-            onAssign={(chambre) => setAssignFor({ chambre_id: String(chambre.id), type: "DEPART" })}
+            onAssign={(chambre) => setAssignFor({ chambre_id: String(chambre.numero ?? chambre.id), type: "DEPART" })}
             onAuthError={logout}
           />
         )}

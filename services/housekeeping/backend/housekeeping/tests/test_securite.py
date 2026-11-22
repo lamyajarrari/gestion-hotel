@@ -53,3 +53,65 @@ class SecuriteTests(SimpleTestCase):
             with self.subTest(cas=cas):
                 with self.assertRaises(AuthenticationFailed):
                     auth.authenticate(requete(jeton))
+
+
+class NotificationChambresTests(SimpleTestCase):
+    """HKP-22 : la route appelée par le service chambres exige le jeton interne."""
+
+    URL = "/api/internal/taches/"
+
+    def test_notification_avec_et_sans_jeton_interne(self):
+        """HKP-22 Accepter la notification de chambres seulement avec le jeton interne"""
+        from rest_framework.test import APIClient
+
+        c = APIClient()
+        corps = {"chambre_id": 3, "type": "menage"}
+        self.assertEqual(c.post(self.URL, corps, format="json").status_code, 401)
+        ok = c.post(self.URL, corps, format="json", HTTP_X_INTERNAL_TOKEN=settings.INTERNAL_API_TOKEN)
+        self.assertEqual(ok.status_code, 202)
+        vide = c.post(self.URL, {}, format="json", HTTP_X_INTERNAL_TOKEN=settings.INTERNAL_API_TOKEN)
+        self.assertEqual(vide.status_code, 400)
+
+
+class VerifierChambreTests(SimpleTestCase):
+    def test_verification_par_numero(self):
+        """HKP-25 Le formulaire vérifie la chambre par son numéro (réservé client/gestionnaire, 404 clair si inconnue)"""
+        from unittest.mock import patch
+        from rest_framework.exceptions import NotFound
+        from rest_framework.test import APIClient
+
+        def appeler(role, numero="102"):
+            c = APIClient()
+            c.credentials(HTTP_AUTHORIZATION=f"Bearer {fabriquer(role=role)}")
+            return c.get("/api/housekeeping/chambres/verifier/", {"numero": numero})
+
+        chambre = {"id": 2, "numero": "102", "type": "Suite", "statut": "OCCUPEE"}
+        with patch("housekeeping.views.clients.get_chambre", return_value=chambre):
+            r = appeler("CLIENT")
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json(), {"numero": "102", "type": "Suite", "statut": "OCCUPEE", "demande_possible": True})
+            self.assertNotIn("id", r.json())
+            self.assertEqual(appeler("AGENT_MENAGE").status_code, 403)
+        with patch("housekeeping.views.clients.get_chambre", side_effect=NotFound("Chambre introuvable")):
+            self.assertEqual(appeler("CLIENT", "999").status_code, 404)
+
+
+class ListeAgentsTests(SimpleTestCase):
+    def test_liste_des_agents_reservee_au_gestionnaire(self):
+        """HKP-27 La liste des agents de ménage (choix par nom) est réservée au gestionnaire"""
+        from unittest.mock import patch
+        from rest_framework.test import APIClient
+
+        def appeler(role):
+            c = APIClient()
+            c.credentials(HTTP_AUTHORIZATION=f"Bearer {fabriquer(role=role)}")
+            return c.get("/api/housekeeping/agents/")
+
+        liste = [{"id": "7", "nom": "Alami", "prenom": "Youssef"}]
+        with patch("housekeeping.views.clients.list_agents", return_value=liste) as appel:
+            r = appeler("GESTIONNAIRE")
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json(), liste)
+            appel.assert_called_once()
+            self.assertEqual(appeler("CLIENT").status_code, 403)
+            self.assertEqual(appeler("AGENT_MENAGE").status_code, 403)

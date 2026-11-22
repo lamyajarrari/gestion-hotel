@@ -44,6 +44,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Jeton JWT : doit être identique dans tous les services
 JWT_SECRET = os.environ.get("JWT_SECRET", "dev-jwt-change-moi")
 JWT_ALGORITHM = "HS256"
+
+
+# Jeton partagé entre services pour les appels internes (X-Internal-Token)
+INTERNAL_API_TOKEN = os.environ.get("INTERNAL_API_TOKEN", "")
 JWT_DUREE_HEURES = 8
 
 CORS_ALLOWED_ORIGINS = [

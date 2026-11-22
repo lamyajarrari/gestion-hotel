@@ -5,7 +5,7 @@ import { inscrire } from "../api/auth.js";
 export default function Inscription() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [champs, setChamps] = useState({ prenom: "", nom: "", email: "", mot_de_passe: "" });
+  const [champs, setChamps] = useState({ prenom: "", nom: "", email: "", mot_de_passe: "", confirmation_mot_de_passe: "" });
   const [erreur, setErreur] = useState("");
 
   function modifier(e) {
@@ -15,6 +15,10 @@ export default function Inscription() {
   async function soumettre(evenement) {
     evenement.preventDefault();
     setErreur("");
+    if (champs.mot_de_passe !== champs.confirmation_mot_de_passe) {
+      setErreur("Les mots de passe ne correspondent pas.");
+      return;
+    }
     try {
       await inscrire(champs);
       navigate(`/connexion${location.search}`, {
@@ -33,7 +37,9 @@ export default function Inscription() {
         <label className="champ">Prénom<input name="prenom" value={champs.prenom} onChange={modifier} required /></label>
         <label className="champ">Nom<input name="nom" value={champs.nom} onChange={modifier} required /></label>
         <label className="champ">E-mail<input type="email" name="email" value={champs.email} onChange={modifier} required /></label>
-        <label className="champ">Mot de passe (8 caractères minimum)<input type="password" name="mot_de_passe" value={champs.mot_de_passe} onChange={modifier} required /></label>
+        <label className="champ">Mot de passe<input type="password" name="mot_de_passe" value={champs.mot_de_passe} onChange={modifier} required /></label>
+        <label className="champ">Confirmation<input type="password" name="confirmation_mot_de_passe" value={champs.confirmation_mot_de_passe} onChange={modifier} required /></label>
+        <p className="texte-doux">8 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.</p>
         {erreur && <p className="alerte" role="alert">{erreur}</p>}
         <button type="submit" className="btn btn-primaire">Créer mon compte</button>
       </form>

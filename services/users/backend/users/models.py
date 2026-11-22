@@ -29,6 +29,8 @@ class Utilisateur(AbstractBaseUser):
     telephone = models.CharField(max_length=20, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CLIENT)
     statut = models.CharField(max_length=10, choices=Statut.choices, default=Statut.ACTIF)
+    code_verification = models.CharField(max_length=6, blank=True, default="")
+    code_expiration = models.DateTimeField(null=True, blank=True)
     date_creation = models.DateTimeField(auto_now_add=True)
 
     objects = UtilisateurManager()
