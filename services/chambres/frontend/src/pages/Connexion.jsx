@@ -18,8 +18,7 @@ export default function Connexion() {
       navigate(role === "admin" ? "/admin" : "/chambres", { replace: true });
     } else {
       const retour = `${window.location.origin}/connexion`;
-      window.location.href = `${USERS_WEB}/connexion?retour=${encodeURIComponent(retour)}`;
-    }
+      window.location.replace(`${USERS_WEB}/connexion?retour=${encodeURIComponent(retour)}`);    }
   }, [navigate]);
 
   return <p>Redirection vers la connexion...</p>;

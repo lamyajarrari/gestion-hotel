@@ -13,6 +13,9 @@ export default function Navbar() {
   const connecte = Boolean(token);
   const estAdmin = connecte && lireRole() === "admin";
 
+  // Sur la page d'accueil, on masque Chambres / Réservations / Housekeeping
+  const surAccueil = emplacement.pathname === "/";
+
   // AJOUT déconnexion : un autre service nous renvoie ici avec « /?deconnexion=1 ».
   // On vide la session locale pour que la première page s'affiche bien déconnectée.
   useEffect(() => {
@@ -63,19 +66,23 @@ export default function Navbar() {
           <span>Riad Souss</span>
         </Link>
         <nav className="liens">
-          <NavLink to="/chambres" className="lien">Chambres</NavLink>
-          <a
-            href="http://localhost:3002"
-            onClick={allerVersReservations}
-            className="lien"
-          >
-            Réservations
-          </a>
-          {/* AJOUT housekeeping */}
-          {aHousekeeping && (
-            <a href={HOUSEKEEPING_WEB} onClick={allerVersHousekeeping} className="lien">
-              Housekeeping
-            </a>
+          {!surAccueil && (
+            <>
+              <NavLink to="/chambres" className="lien">Chambres</NavLink>
+              <a
+                href="http://localhost:3002"
+                onClick={allerVersReservations}
+                className="lien"
+              >
+                Réservations
+              </a>
+              {/* AJOUT housekeeping */}
+              {aHousekeeping && (
+                <a href={HOUSEKEEPING_WEB} onClick={allerVersHousekeeping} className="lien">
+                  Housekeeping
+                </a>
+              )}
+            </>
           )}
           {estAdmin && <NavLink to="/admin" className="lien">Administration</NavLink>}
           {/* AJOUT users */}
