@@ -28,7 +28,7 @@ def assigner(chambre_statut="A_NETTOYER", agent=AGENT_OK, **kw):
     )
     params.update(kw)
     with patch("housekeeping.services.clients.get_chambre", return_value={"statut": chambre_statut}), \
-         patch("housekeeping.services.clients.get_user", return_value=agent):
+            patch("housekeeping.services.clients.get_user", return_value=agent):
         return services.assigner(**params)
 
 
@@ -189,7 +189,7 @@ class DemandeTests(TestCase):
 
         # le gestionnaire la traite : un service quotidien est créé et lié
         with patch("housekeeping.services.clients.get_chambre", return_value={"statut": "OCCUPEE"}), \
-             patch("housekeeping.services.clients.get_user", return_value=AGENT_OK):
+                patch("housekeeping.services.clients.get_user", return_value=AGENT_OK):
             services.traiter_demande(demande.pk, agent_id="7", date_prevue=DEMAIN, gestionnaire_id="1")
         demande.refresh_from_db()
         service = demande.services.get()
@@ -217,3 +217,36 @@ class ContrainteBaseTests(TestCase):
                 creer()
         creer(chambre_id="13")  # une autre chambre reste possible
         self.assertEqual(ServiceMenage.objects.count(), 2)
+
+
+class IdentifiantChambreTests(TestCase):
+    def test_on_enregistre_l_identifiant_et_le_numero(self):
+        """HKP-24 Numéro saisi → identifiant enregistré (stable) + numéro (affichage) ; une valeur déjà enregistrée
+        est lue par identifiant, jamais par numéro"""
+        chambre = {"id": 2, "numero": "102", "statut": "OCCUPEE"}
+        with patch("housekeeping.services.clients.get_chambre", return_value=chambre) as get, \
+                patch("housekeeping.services.clients.get_user", return_value=AGENT_OK):
+            service = services.assigner(
+                chambre_id="102", agent_id="7", type_service=TypeService.QUOTIDIEN,
+                date_prevue=DEMAIN, gestionnaire_id="1",
+            )
+            self.assertEqual((service.chambre_id, service.chambre_numero), ("2", "102"))
+            get.assert_called_with("102", par_id=False)
+
+        autre = {"id": 3, "numero": "103", "statut": "OCCUPEE"}
+        demande = DemandeNettoyage.objects.create(chambre_id="3", client_id="9", description="x")
+        with patch("housekeeping.services.clients.get_chambre", return_value=autre) as get, \
+                patch("housekeeping.services.clients.get_user", return_value=AGENT_OK):
+            services.traiter_demande(demande.pk, agent_id="7", date_prevue=DEMAIN, gestionnaire_id="1")
+        get.assert_called_with("3", par_id=True)
+class NomAgentTests(TestCase):
+        def test_le_nom_de_l_agent_est_enregistre(self):
+            """HKP-26 Le nom de l'agent est enregistré avec la tâche (l'interface l'affiche au lieu de l'identifiant)"""
+            agent = {"id": "7", "role": "AGENT_MENAGE", "statut": "ACTIF", "nom": "Alami", "prenom": "Youssef"}
+            with patch("housekeeping.services.clients.get_chambre", return_value={"id": 2, "numero": "102", "statut": "A_NETTOYER"}), \
+                    patch("housekeeping.services.clients.get_user", return_value=agent):
+                service = services.assigner(
+                    chambre_id="102", agent_id="7", type_service=TypeService.DEPART,
+                    date_prevue=DEMAIN, gestionnaire_id="1",
+                )
+            self.assertEqual((service.agent_id, service.agent_nom), ("7", "Youssef Alami"))

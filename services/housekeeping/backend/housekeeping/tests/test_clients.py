@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import requests
 from django.conf import settings
 from django.test import SimpleTestCase
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 from housekeeping import clients
 from housekeeping.exceptions import ExternalServiceError
@@ -39,3 +39,13 @@ class ClientsTests(SimpleTestCase):
         _, kwargs = req.call_args
         self.assertEqual(kwargs["headers"], {"X-Internal-Token": settings.INTERNAL_API_TOKEN})
         self.assertEqual(kwargs["timeout"], settings.EXTERNAL_TIMEOUT)
+
+    @patch("housekeeping.clients.requests.request")
+    def test_liste_refusee_par_chambres(self, req):
+        """HKP-23 Expliquer clairement (403) quand chambres refuse le rôle du gestionnaire"""
+        req.return_value = reponse(403)
+        with self.assertRaises(PermissionDenied):
+            clients.list_chambres_a_nettoyer("jeton")
+        # un jeton interne refusé reste une panne de configuration (503), pas une erreur de l'utilisateur
+        with self.assertRaises(ExternalServiceError):
+            clients.get_chambre("12")

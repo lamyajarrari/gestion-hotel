@@ -7,7 +7,7 @@ class ServiceMenageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceMenage
         fields = [
-            "id", "chambre_id", "agent_id", "type", "statut", "description", "priorite",
+            "id", "chambre_id", "chambre_numero", "agent_id", "agent_nom", "type", "statut", "description", "priorite",
             "date_prevue", "date_creation", "date_debut", "date_fin", "assigne_par", "demande",
         ]
         read_only_fields = fields
@@ -40,7 +40,7 @@ class DemandeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DemandeNettoyage
-        fields = ["id", "chambre_id", "client_id", "description", "priorite", "statut",
+        fields = ["id", "chambre_id", "chambre_numero", "client_id", "description", "priorite", "statut",
                   "date_demande", "service"]
         read_only_fields = fields
 
@@ -49,7 +49,7 @@ class DemandeSerializer(serializers.ModelSerializer):
         s = demande.services.order_by("-date_creation").first()
         if not s:
             return None
-        return {"id": str(s.id), "agent_id": s.agent_id, "statut": s.statut,
+        return {"id": str(s.id), "agent_id": s.agent_id, "agent_nom": s.agent_nom, "statut": s.statut,
                 "date_prevue": s.date_prevue, "date_debut": s.date_debut, "date_fin": s.date_fin}
 
 

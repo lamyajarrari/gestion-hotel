@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { assigner } from "../api.js";
+import ChoixAgent from "./ChoixAgent.jsx";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -53,13 +54,14 @@ export default function AssignModal({ initial, onClose, onDone, onAuthError }) {
         <div className="space-y-4 px-8 py-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className={label}>
-              Chambre (identifiant)
-              <input required value={form.chambre_id} onChange={set("chambre_id")} className="field mt-1" />
+              Numéro de la chambre
+              <input required placeholder="Ex. 102" value={form.chambre_id} onChange={set("chambre_id")} className="field mt-1" />
             </label>
-            <label className={label}>
-              Agent de ménage (identifiant)
-              <input required value={form.agent_id} onChange={set("agent_id")} className="field mt-1" />
-            </label>
+            <ChoixAgent
+              value={form.agent_id}
+              onChange={(id) => setForm((f) => ({ ...f, agent_id: id }))}
+              onAuthError={onAuthError}
+            />
             <label className={label}>
               Type
               <select value={form.type} onChange={set("type")} className="field mt-1">

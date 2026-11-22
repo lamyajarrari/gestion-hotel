@@ -12,8 +12,12 @@ from .models import (
 
 
 def assigner(*, chambre_id, agent_id, type_service, date_prevue, gestionnaire_id,
-             description="", priorite=Priorite.NORMALE):
-    chambre = clients.get_chambre(chambre_id)
+             description="", priorite=Priorite.NORMALE, par_id=False):
+    """chambre_id : numéro saisi par l'utilisateur (ou identifiant si par_id=True).
+    On enregistre toujours l'IDENTIFIANT de la chambre (stable) et son numéro (affichage)."""
+    chambre = clients.get_chambre(chambre_id, par_id=par_id)
+    numero = str(chambre.get("numero", "") or "")
+    chambre_id = chambre.get("id", chambre_id)
     etat = chambre.get("statut")
 
     if type_service == TypeService.DEPART and etat != clients.CHAMBRE_A_NETTOYER:
@@ -28,14 +32,14 @@ def assigner(*, chambre_id, agent_id, type_service, date_prevue, gestionnaire_id
         raise ConflictError("Le compte de cet agent est inactif.")
 
     if ServiceMenage.objects.filter(chambre_id=str(chambre_id)).exclude(
-        statut=StatutService.TERMINE
+            statut=StatutService.TERMINE
     ).exists():
         raise ConflictError("Cette chambre a déjà un service de ménage non terminé.")
 
     try:
         with transaction.atomic():
             return ServiceMenage.objects.create(
-                chambre_id=str(chambre_id),
+                chambre_id=str(chambre_id), chambre_numero=numero,
                 agent_id=str(agent_id),
                 type=type_service,
                 date_prevue=date_prevue,
@@ -105,12 +109,14 @@ def supprimer(service_id):
 
 def creer_demande(*, client_id, chambre_id, description, priorite=Priorite.NORMALE):
     chambre = clients.get_chambre(chambre_id)  # 404 si la chambre n'existe pas
+    chambre_id = chambre.get("id", chambre_id)  # on mémorise l'identifiant, pas le numéro saisi
+    numero = str(chambre.get("numero", "") or "")
     if chambre.get("statut") != clients.CHAMBRE_OCCUPEE:
         raise ConflictError("Un nettoyage ne peut être demandé que pour une chambre occupée.")
     try:
         with transaction.atomic():
             return DemandeNettoyage.objects.create(
-                chambre_id=str(chambre_id), client_id=str(client_id),
+                chambre_id=str(chambre_id), chambre_numero=numero, client_id=str(client_id),
                 description=description, priorite=priorite,
             )
     except IntegrityError:
@@ -136,7 +142,7 @@ def traiter_demande(demande_id, *, agent_id, date_prevue, gestionnaire_id):
         service = assigner(
             chambre_id=demande.chambre_id, agent_id=agent_id, type_service=TypeService.QUOTIDIEN,
             date_prevue=date_prevue, gestionnaire_id=gestionnaire_id,
-            description=demande.description, priorite=demande.priorite,
+            description=demande.description, priorite=demande.priorite, par_id=True,
         )
         service.demande = demande
         service.save(update_fields=["demande"])

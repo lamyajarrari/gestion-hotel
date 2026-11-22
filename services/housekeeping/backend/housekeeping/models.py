@@ -34,6 +34,7 @@ class DemandeNettoyage(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     chambre_id = models.CharField(max_length=64, db_index=True)
+    chambre_numero = models.CharField(max_length=32, blank=True, default="")  # affichage
     client_id = models.CharField(max_length=64, db_index=True)
     description = models.TextField()
     priorite = models.CharField(max_length=10, choices=Priorite.choices, default=Priorite.NORMALE)
@@ -63,7 +64,9 @@ class ServiceMenage(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     chambre_id = models.CharField(max_length=64, db_index=True)
+    chambre_numero = models.CharField(max_length=32, blank=True, default="")  # affichage
     agent_id = models.CharField(max_length=64, db_index=True)
+    agent_nom = models.CharField(max_length=201, blank=True, default="")  # affichage
     type = models.CharField(max_length=10, choices=TypeService.choices)
     statut = models.CharField(
         max_length=10, choices=StatutService.choices, default=StatutService.ASSIGNE

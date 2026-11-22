@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { annulerDemande, listDemandes, traiterDemande } from "../api.js";
 import { Badge, Empty, ErrorBox, Modal, Pills, PRIORITES, STATUTS_DEMANDE, dateHeure, jour } from "./ui.jsx";
+import ChoixAgent from "./ChoixAgent.jsx";
 
 // Vue du gestionnaire sur les demandes de nettoyage des clients : prendre en charge ou refuser.
 export default function DemandesAdmin({ version, onChanged, onToast, onAuthError }) {
@@ -61,14 +62,16 @@ export default function DemandesAdmin({ version, onChanged, onToast, onAuthError
               {rows.map((d) => (
                 <tr key={d.id} className="border-t border-line align-top first:border-t-0">
                   <td className="td font-mono text-xs">{d.id.slice(0, 8)}</td>
-                  <td className="td font-medium">{d.chambre_id}</td>
+                  <td className="td font-medium">{d.chambre_numero || d.chambre_id}</td>
                   <td className="td">{d.client_id}</td>
                   <td className="td max-w-56 text-muted">{d.description}</td>
                   <td className="td"><Badge table={PRIORITES} value={d.priorite} /></td>
                   <td className="td">
                     <Badge table={STATUTS_DEMANDE} value={d.statut} />
                     {d.service && (
-                      <p className="mt-1 text-xs text-muted">Agent {d.service.agent_id} · prévu {jour(d.service.date_prevue)}</p>
+                      <p className="mt-1 text-xs text-muted">
+                        {d.service.agent_nom || `Agent ${d.service.agent_id}`} · prévu {jour(d.service.date_prevue)}
+                      </p>
                     )}
                   </td>
                   <td className="td whitespace-nowrap">{dateHeure(d.date_demande)}</td>
@@ -118,13 +121,10 @@ function TraiterModal({ demande, onClose, onDone, onAuthError }) {
     }
   }
   return (
-    <Modal title={`Traiter la demande · chambre ${demande.chambre_id}`} onClose={onClose}>
+    <Modal title={`Traiter la demande · chambre ${demande.chambre_numero || demande.chambre_id}`} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
         <p className="text-sm text-muted">« {demande.description} »</p>
-        <label className="block text-sm text-muted">
-          Agent de ménage (identifiant)
-          <input required value={agent} onChange={(e) => setAgent(e.target.value)} className="field mt-1" />
-        </label>
+        <ChoixAgent value={agent} onChange={setAgent} onAuthError={onAuthError} />
         <label className="block text-sm text-muted">
           Date prévue
           <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className="field mt-1" />

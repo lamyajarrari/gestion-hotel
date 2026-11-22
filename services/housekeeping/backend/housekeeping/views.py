@@ -22,6 +22,40 @@ def health(request):
     return Response({"status": "ok", "service": "housekeeping"})
 
 
+@extend_schema(
+    parameters=[OpenApiParameter("numero", str, description="Numéro de la chambre (ex. 102)")],
+    responses={200: dict},
+    summary="Vérifier une chambre par son numéro (formulaire de demande de ménage)",
+)
+@api_view(["GET"])
+@permission_classes([IsClientOrGestionnaire])
+def verifier_chambre(request):
+    """Le formulaire interroge cette route pendant la saisie : numéro → chambre trouvée (ou 404 clair).
+    On ne renvoie que ce qui sert à l'affichage (jamais l'identifiant interne)."""
+    numero = request.query_params.get("numero", "").strip()
+    if not numero:
+        return Response({"detail": "Saisissez un numéro de chambre."}, status=status.HTTP_400_BAD_REQUEST)
+    chambre = clients.get_chambre(numero)  # 404 clair si inconnue ou désactivée
+    return Response({
+        "numero": str(chambre.get("numero", numero)),
+        "type": chambre.get("type") or chambre.get("categorie") or "",
+        "statut": chambre["statut"],
+        "demande_possible": chambre["statut"] == clients.CHAMBRE_OCCUPEE,
+    })
+
+
+@extend_schema(
+    responses={200: dict},
+    summary="Agents de ménage actifs (pour les choisir par leur nom)",
+)
+@api_view(["GET"])
+@permission_classes([IsGestionnaire])
+def agents(request):
+    """Liste des agents de ménage actifs, lue dans le service users.
+    L'interface s'en sert pour proposer les agents par leur nom au lieu de leur identifiant."""
+    return Response(clients.list_agents(request.auth))
+
+
 class ServiceMenageViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -49,7 +83,8 @@ class ServiceMenageViewSet(
         if recherche:  # recherche libre (spécification H002)
             qs = qs.filter(
                 Q(description__icontains=recherche) | Q(chambre_id__icontains=recherche)
-                | Q(agent_id__icontains=recherche)
+                | Q(chambre_numero__icontains=recherche) | Q(agent_id__icontains=recherche)
+                | Q(agent_nom__icontains=recherche)
             )
         return qs
 
