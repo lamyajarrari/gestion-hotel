@@ -1,0 +1,4 @@
+$kind: collection
+description: Tests CRUD de l'API REST de gestion de bibliothèque. Exécuter les requêtes dans l'ordre.
+variables:
+  baseUrl: http://localhost:8080

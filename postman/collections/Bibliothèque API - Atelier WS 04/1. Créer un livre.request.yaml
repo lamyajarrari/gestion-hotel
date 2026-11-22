@@ -1,0 +1,10 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/livres"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: '{"titre": "Le Petit Prince", "auteur": "Antoine de Saint-Exupéry", "anneePublication": 1943, "isbn": "978-2-07-040525-0"}'
+order: 1000

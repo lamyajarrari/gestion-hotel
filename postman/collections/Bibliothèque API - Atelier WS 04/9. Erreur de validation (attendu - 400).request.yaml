@@ -1,0 +1,10 @@
+$kind: http-request
+name: "9. Erreur de validation (attendu : 400)"
+url: "{{baseUrl}}/api/livres"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: '{"titre": "", "auteur": "", "anneePublication": 3000, "isbn": ""}'
+order: 9000
