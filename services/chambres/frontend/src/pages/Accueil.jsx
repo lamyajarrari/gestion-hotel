@@ -35,9 +35,7 @@ export default function Accueil() {
           </p>
           <div className="hero-actions anime-entree delai-3">
             <Link to="/chambres" className="btn btn-primaire">Voir les chambres</Link>
-            {connecte ? (
-              <Link to="/admin" className="btn btn-secondaire">Espace administration</Link>
-            ) : (
+            {!connecte && (
               <Link to="/connexion" className="btn btn-secondaire">Se connecter</Link>
             )}
           </div>

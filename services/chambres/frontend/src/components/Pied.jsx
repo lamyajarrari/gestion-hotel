@@ -21,16 +21,15 @@ export default function Pied() {
           <ul>
             <li><Link to="/">Accueil</Link></li>
             <li><Link to="/chambres">Chambres</Link></li>
-            <li><Link to="/connexion">Espace administration</Link></li>
           </ul>
         </div>
 
         <div className="pied-bloc">
           <h4>Contact</h4>
           <ul>
-            <li>[Adresse du riad]</li>
-            <li>[Numéro de téléphone]</li>
-            <li>[Adresse e-mail]</li>
+            <li>Quartier Talborjt, Agadir 80000, Maroc</li>
+            <li>+212 5 28 00 00 00</li>
+            <li>riadsouss@gmail.com</li>
           </ul>
         </div>
       </div>
