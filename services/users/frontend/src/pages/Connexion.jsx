@@ -42,7 +42,7 @@ export default function Connexion() {
       const { jeton, role } = await connecter(email, motDePasse);
       if (retourAutorise(retour)) {
         const fragment = `jeton=${encodeURIComponent(jeton)}&role=${encodeURIComponent(role)}`;
-        window.location.href = `${retour}#${fragment}`;
+        window.location.replace(`${retour}#${fragment}`);
       } else {
         setConnecte(true);
       }
